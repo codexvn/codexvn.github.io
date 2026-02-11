@@ -1,0 +1,287 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Steam的P2P联机优化 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景 最近在玩群星,但是多人联机效果非常差,然后网上调研了一下发现可以用组网工具加速提升联机效果。 使用了一段时间之后发现有时候有效果有时候没有效果,所以研究了一下。 P2P实现的原理 Steam 数据报中继 https:&#x2F;&#x2F;partner.steamgames.com&#x2F;doc&#x2F;features&#x2F;multiplayer&#x2F;steamdatagramrelay?l&#x3D;schinese https:&#x2F;&#x2F;p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Steam的P2P联机优化">
+<meta property="og:url" content="https://codexvn.top/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="背景 最近在玩群星,但是多人联机效果非常差,然后网上调研了一下发现可以用组网工具加速提升联机效果。 使用了一段时间之后发现有时候有效果有时候没有效果,所以研究了一下。 P2P实现的原理 Steam 数据报中继 https:&#x2F;&#x2F;partner.steamgames.com&#x2F;doc&#x2F;features&#x2F;multiplayer&#x2F;steamdatagramrelay?l&#x3D;schinese https:&#x2F;&#x2F;p">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2024-11-22T03:19:50.000Z">
+<meta property="article:modified_time" content="2026-02-11T07:22:40.784Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="Steam,P2P,LAN,Easytier">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1T1C5Y5F7W');
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Steam的P2P联机优化',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-02-11 15:22:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="徇的小站"><span class="site-name">徇的小站</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Steam的P2P联机优化</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-11-22T03:19:50.000Z" title="发表于 2024-11-22 11:19:50">2024-11-22</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T07:22:40.784Z" title="更新于 2026-02-11 15:22:40">2026-02-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Steam的P2P联机优化"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><h1>背景</h1>
+<p>最近在玩群星,但是多人联机效果非常差,然后网上调研了一下发现可以用组网工具加速提升联机效果。</p>
+<p>使用了一段时间之后发现有时候有效果有时候没有效果,所以研究了一下。</p>
+<h1>P2P实现的原理</h1>
+<h2 id="Steam-数据报中继">Steam 数据报中继</h2>
+<p><a target="_blank" rel="noopener" href="https://partner.steamgames.com/doc/features/multiplayer/steamdatagramrelay?l=schinese">https://partner.steamgames.com/doc/features/multiplayer/steamdatagramrelay?l=schinese</a></p>
+<p><a target="_blank" rel="noopener" href="https://partner.steamgames.com/doc/api/ISteamNetworkingSockets#CreateListenSocketP2P">https://partner.steamgames.com/doc/api/ISteamNetworkingSockets#CreateListenSocketP2P</a></p>
+<p><a target="_blank" rel="noopener" href="https://partner.steamgames.com/doc/api/ISteamNetworkingSockets#ConnectP2P">https://partner.steamgames.com/doc/api/ISteamNetworkingSockets#ConnectP2P</a></p>
+<p>Steam的SDK中提供了可以直接用于P2P的接口,游戏只需要实现接口就实现P2P连接</p>
+<h2 id="Steam中的对等网络及共享IP-地址">Steam中的对等网络及共享IP 地址</h2>
+<p><a target="_blank" rel="noopener" href="https://help.steampowered.com/zh/faqs/view/1433-AD20-F11D-B71E">https://help.steampowered.com/zh/faqs/view/1433-AD20-F11D-B71E</a></p>
+<p>参考这篇文章介绍</p>
+<blockquote>
+<h4 id="使用中继进行对等连接">使用中继进行对等连接</h4>
+<p>在建立直接连接时，视防火墙配置而定，NAT 遍历不一定总能成功。 如果失败，玩家就需要利用中继来和彼此交流。 每个玩家的防火墙都将接收来自中继的数据包。 （<a target="_blank" rel="noopener" href="https://steamcommunity.com/linkfilter/?u=https%3A%2F%2Ftailscale.com%2Fblog%2Fhow-nat-traversal-works%2F">这篇文章</a>很好地详细描述了这一流程。） 使用中继不需要和另一玩家分享您的 IP 地址，这是其好处之一。 通常，只有在无法建立直接连接的情况下，才会使用中继作为最后的方案，因为这项服务开销相对较大。 在这种情况下，即使不可能建立直接连接，双方也已经相互交换了 IP 地址，因此还是有可能发生 DoS 攻击。 如果一方或双方对等端拒绝分享 IP 地址，那么就不可能建立直接连接，NAT 遍历将会请求使用中继。 双方对等端必须都分享其 IP 地址，才能建立直接连接。</p>
+<h4 id="使用-Steam-网络-API-的游戏又如何呢？">使用 Steam 网络 API 的游戏又如何呢？</h4>
+<p>如果游戏使用了最新的网络 API（ISteamNetworkingSockets 和 ISteamNetworkingMessages），那么流量将会通过 Steam 数据报中继（SDR）进行中继。这是 Valve 遍布全球的主干和中继网络，您可以决定何时允许某款应用分享您的 IP 地址。 在 “Steam”/“设置”/“游戏中”/“Steam 网络”中，有可以控制何时分享您 IP 地址的选项：</p>
+<ul>
+<li>从不<br>
+永不和任何玩家分享您的 IP。 永远中继对等流量。</li>
+<li>始终<br>
+始终允许应用和所有玩家分享您的 IP。 如果另一玩家也分享了其地址，则可能会建立直接连&gt;接； 否则，进行中继。</li>
+<li>默认<br>
+除非出现必须避免 Ping 时间过长的情况，否则此选项不会分享您的 IP 地址。</li>
+<li>仅限好友<br>
+仅与您好友列表中的用户分享您的 IP。</li>
+</ul>
+</blockquote>
+<p>也就是说如果相互之间允许IP分享，Steam会自动检测NAT,如果NAT能够打通那么就会直接建立P2P连接,否则会使用服务器进行中继。</p>
+<h1>检查Steam是否真的使用了P2P</h1>
+<p>在这一步,我们使用了 Easytier 进行了组网,使用NetLimiter检查进程所连接的IP和端口,P社的Stellaris进行验证</p>
+<ol>
+<li>开启共享IP</li>
+</ol>
+<p>Steam -&gt; 设置 -&gt; 游戏中 -&gt; Steam网络 -&gt; 分享IP改为始终<br>
+不太确定是不是实时生效,所以这一步改完了之后再把Steam退掉</p>
+<ol start="2">
+<li>组网后进入游戏，加入房间</li>
+</ol>
+<p>这一步需要注意，一定要先组网并验证相互之间已经连接成功,然后再开Steam然后进游戏</p>
+<ol start="3">
+<li>使用NetLimiter检查进程所连接的IP和端口</li>
+</ol>
+<p>10.144.6.xxx是组网后的虚拟内网网段</p>
+<img src="/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96/1.png" class="">
+<img src="/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96/image-20241122122756481.png" class="">
+<p>可以看到确实是走了内网,同时在同步存档的时候可以观察到内网的大流量,不过是Steam建立了链接,推测是群星使用了Steam的SDK后由Steam转发了流量</p>
+<h1>优化思路</h1>
+<p>已经确定Steam的P2P可以走虚拟局域网,接下来就是优化组网的效果</p>
+<ol>
+<li>
+<p>目前是打算阿里云的按量计费机器,2H2G,100Mbps带宽的流量,同时支持停机不计费和定时释放实例。</p>
+<p>会赠送20G的免费流量,按照6H小时开一把群星来算的话,<code>6H*0.11/H</code>+免费流量,费用很低,而且在用完之后可以停掉实例,后续使用的时候再开。</p>
+</li>
+</ol>
+<img src="/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96/2.png" class="">
+<img src="/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96/3.png" class="">
+<ol start="2">
+<li>有时候就算P2P打通隧道,但是由于跨省结算的原因,可能会导致UDP不稳,此时可以考虑强制走中继模式来提升稳定性,个人是推荐直接走中继模式</li>
+</ol>
+<h1>最后</h1>
+<p>感谢朋友们的帮助和配合,来和我一起来优化联机的效果。</p>
+<h1>相关链接</h1>
+<p><a target="_blank" rel="noopener" href="https://github.com/EasyTier/Easytier">https://github.com/EasyTier/Easytier</a><br>
+<a target="_blank" rel="noopener" href="https://easytier.cn/">https://easytier.cn/</a></p>
+<h1>更新日志</h1>
+<ul>
+<li>2025-09-02 将N2N换成了更易用且性能更高的Easytier</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://codexvn.top">codexvn</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://codexvn.top/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96.html">https://codexvn.top/2024/Steam%E7%9A%84P2P%E8%81%94%E6%9C%BA%E4%BC%98%E5%8C%96.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://codexvn.top" target="_blank">徇的小站</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Steam-P2P-LAN-Easytier/">Steam,P2P,LAN,Easytier</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2025/%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E5%AE%89%E8%A3%85LiveCD.html" title="在磁盘上安装LiveCD"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">在磁盘上安装LiveCD</div></div></a></div><div class="next-post pull-right"><a href="/2024/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E8%83%BD%E5%A4%9F%E8%87%AA%E5%8A%A8%E5%88%A0%E9%99%A4%E7%9A%84%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6.html" title="实现一个能够自动删除的临时文件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">实现一个能够自动删除的临时文件</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">codexvn</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">P2P实现的原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Steam-%E6%95%B0%E6%8D%AE%E6%8A%A5%E4%B8%AD%E7%BB%A7"><span class="toc-number">2.1.</span> <span class="toc-text">Steam 数据报中继</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Steam%E4%B8%AD%E7%9A%84%E5%AF%B9%E7%AD%89%E7%BD%91%E7%BB%9C%E5%8F%8A%E5%85%B1%E4%BA%ABIP-%E5%9C%B0%E5%9D%80"><span class="toc-number">2.2.</span> <span class="toc-text">Steam中的对等网络及共享IP 地址</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E4%B8%AD%E7%BB%A7%E8%BF%9B%E8%A1%8C%E5%AF%B9%E7%AD%89%E8%BF%9E%E6%8E%A5"><span class="toc-number">2.2.0.1.</span> <span class="toc-text">使用中继进行对等连接</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-Steam-%E7%BD%91%E7%BB%9C-API-%E7%9A%84%E6%B8%B8%E6%88%8F%E5%8F%88%E5%A6%82%E4%BD%95%E5%91%A2%EF%BC%9F"><span class="toc-number">2.2.0.2.</span> <span class="toc-text">使用 Steam 网络 API 的游戏又如何呢？</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">检查Steam是否真的使用了P2P</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">优化思路</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">最后</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">相关链接</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">更新日志</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB.html" title="开发工具数据迁移">开发工具数据迁移</a><time datetime="2025-08-14T08:23:26.000Z" title="发表于 2025-08-14 16:23:26">2025-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E4%BD%BF%E7%94%A8Antlr4%E6%9D%A5%E8%A7%A3%E6%9E%90P%E7%A4%BE%E6%B8%B8%E6%88%8F%E7%BE%A4%E6%98%9F-stellaris-%E7%9A%84%E7%A7%91%E6%8A%80%E6%A0%91.html" title="使用Antlr4来解析P社游戏群星[stellaris]的科技树">使用Antlr4来解析P社游戏群星[stellaris]的科技树</a><time datetime="2025-05-18T10:13:06.000Z" title="发表于 2025-05-18 18:13:06">2025-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E5%AE%89%E8%A3%85LiveCD.html" title="在磁盘上安装LiveCD">在磁盘上安装LiveCD</a><time datetime="2025-04-25T12:16:12.000Z" title="发表于 2025-04-25 20:16:12">2025-04-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By codexvn</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'light'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-mapping': 'pathname',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment= loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

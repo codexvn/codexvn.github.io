@@ -1,0 +1,265 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>基于语法树对文章中的章节数据进行匹配 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景 之前有尝试过使用正则提取一篇文章中的标题信息，并还原其中的层级，碰到以下几个问题：  正则规则复杂，调试不方便 正则对于匹配到标题中的编号信息需要在代码中进行二次处理，处理的步骤也很麻烦，需要考虑多种边界条件 当正则变动时，对应的代码也需要进行变动  突发奇想是否可以使用ANTLR4通过构建语法树的方式来解决这几个问题 构建语法树 标题识别的思路 常见标题样式可分为以下两种：   （左侧分隔">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于语法树对文章中的章节数据进行匹配">
+<meta property="og:url" content="https://codexvn.top/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="背景 之前有尝试过使用正则提取一篇文章中的标题信息，并还原其中的层级，碰到以下几个问题：  正则规则复杂，调试不方便 正则对于匹配到标题中的编号信息需要在代码中进行二次处理，处理的步骤也很麻烦，需要考虑多种边界条件 当正则变动时，对应的代码也需要进行变动  突发奇想是否可以使用ANTLR4通过构建语法树的方式来解决这几个问题 构建语法树 标题识别的思路 常见标题样式可分为以下两种：   （左侧分隔">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2023-10-06T04:27:56.000Z">
+<meta property="article:modified_time" content="2026-02-11T07:22:40.783Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="NLP ANTLR4 JAVA">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1T1C5Y5F7W');
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '基于语法树对文章中的章节数据进行匹配',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-02-11 15:22:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="徇的小站"><span class="site-name">徇的小站</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">基于语法树对文章中的章节数据进行匹配</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-10-06T04:27:56.000Z" title="发表于 2023-10-06 12:27:56">2023-10-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T07:22:40.783Z" title="更新于 2026-02-11 15:22:40">2026-02-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="基于语法树对文章中的章节数据进行匹配"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="背景">背景</h3>
+<p>之前有尝试过使用正则提取一篇文章中的标题信息，并还原其中的层级，碰到以下几个问题：</p>
+<ul>
+<li>正则规则复杂，调试不方便</li>
+<li>正则对于匹配到标题中的编号信息需要在代码中进行二次处理，处理的步骤也很麻烦，需要考虑多种边界条件</li>
+<li>当正则变动时，对应的代码也需要进行变动</li>
+</ul>
+<p>突发奇想是否可以使用ANTLR4通过构建语法树的方式来解决这几个问题</p>
+<h3 id="构建语法树">构建语法树</h3>
+<h4 id="标题识别的思路">标题识别的思路</h4>
+<p>常见标题样式可分为以下两种：</p>
+<ul>
+<li>
+<p><code>（左侧分隔符）</code> <code>编号</code> <code> 右侧分隔符</code>  <code>正文</code>，比如：</p>
+<ul>
+<li>第一章</li>
+<li>第一节</li>
+<li>1：</li>
+<li>2：</li>
+</ul>
+<p>左侧分隔符不一定存在，但是右侧分隔符会存在</p>
+</li>
+<li>
+<p><code>编号</code>.<code>编号</code>.<code>编号</code> <code>右侧分隔符</code>  <code>正文</code>，比如：</p>
+<ul>
+<li>1</li>
+<li>1.1</li>
+<li>1.1.1</li>
+</ul>
+</li>
+</ul>
+<p>对于列举式，像带有<code>如下列所述</code>等字眼，通过a 、b、c等序号一条一条列举出来的暂时不在文本考虑范围内。</p>
+<h4 id="开始构建语法树">开始构建语法树</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">grammar TitleDetect;</span><br><span class="line"></span><br><span class="line">//代表整个段落，有3个部分</span><br><span class="line">expr:</span><br><span class="line">title_begin ? num_seg splite</span><br><span class="line">;</span><br><span class="line">//代表段落第一部分，标题的开始</span><br><span class="line">title_begin:</span><br><span class="line">TITLE_BEGIN</span><br><span class="line">;</span><br><span class="line">//代表段落第二部分，编号部分</span><br><span class="line">num_seg:</span><br><span class="line">(num_cn|num) (multive_level_num_splite (num_cn|num))*</span><br><span class="line">;</span><br><span class="line">//代表段落第三部分，分隔符</span><br><span class="line">splite:</span><br><span class="line">(SPLITE_CHAR|SPLITE_SYMBLE|WS|MULTIVE_LEVEL_NUM_SPLITE|NOT_NATURE_CHAR)+</span><br><span class="line">;</span><br><span class="line"></span><br><span class="line">num_cn:</span><br><span class="line">NUM_CN</span><br><span class="line">;</span><br><span class="line">num:</span><br><span class="line">NUM</span><br><span class="line">;</span><br><span class="line"></span><br><span class="line">multive_level_num_splite:</span><br><span class="line">MULTIVE_LEVEL_NUM_SPLITE</span><br><span class="line">;</span><br><span class="line"></span><br><span class="line">WS : [ \t\r]  ; // spaces, tabs</span><br><span class="line">TITLE_BEGIN : &#x27;第&#x27;;      // 匹配开头</span><br><span class="line">NUM : [0-9]+;      // 匹配阿拉伯数字</span><br><span class="line">NUM_CN : [一二三四五六七八九十]+;      // 匹配中文阿拉伯数字</span><br><span class="line">MULTIVE_LEVEL_NUM_SPLITE : [.]+;</span><br><span class="line">SPLITE_SYMBLE : [。．,、，：:]+;</span><br><span class="line">SPLITE_CHAR : [条章节话目]+;</span><br><span class="line">NOT_NATURE_CHAR: ~[a-zA-Z0-9\u4e00-\u9fa5];</span><br><span class="line">CHAE: .;</span><br></pre></td></tr></table></figure>
+<h4 id="使用antlr4-maven-plugin插件进行编译">使用antlr4-maven-plugin插件进行编译</h4>
+<p>插件文档地址: <a target="_blank" rel="noopener" href="https://www.antlr.org/api/maven-plugin/latest/antlr4-mojo.html">https://www.antlr.org/api/maven-plugin/latest/antlr4-mojo.html</a></p>
+<p>在pom.xml中加入antlr4-maven-plugin插件</p>
+<p>注意g4文件所编译代码中的包名，此处演示使用<code>antlr4</code></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.antlr<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>antlr4-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>$&#123;antlr4.version&#125;<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">executions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">execution</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">goals</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">goal</span>&gt;</span>antlr4<span class="tag">&lt;/<span class="name">goal</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">goals</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">execution</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">executions</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">visitor</span>&gt;</span>true<span class="tag">&lt;/<span class="name">visitor</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">arguments</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">argument</span>&gt;</span>-package<span class="tag">&lt;/<span class="name">argument</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">argument</span>&gt;</span>antlr4<span class="tag">&lt;/<span class="name">argument</span>&gt;</span> //此处填写包名</span><br><span class="line">        <span class="tag">&lt;/<span class="name">arguments</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="用于测试的文件">用于测试的文件</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">第一章：这是第一章</span><br><span class="line">第二章：这是第二章</span><br><span class="line">第三章：这是第三章</span><br><span class="line"></span><br><span class="line">1、 这是一级标题</span><br><span class="line">1.2、 这是二级标题</span><br><span class="line">1.2.3、 这是三级标题</span><br></pre></td></tr></table></figure>
+<h3 id="演示代码">演示代码</h3>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.example;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"><span class="keyword">import</span> java.util.Scanner;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> antlr4.TitleDetectBaseVisitor;</span><br><span class="line"><span class="keyword">import</span> antlr4.TitleDetectLexer;</span><br><span class="line"><span class="keyword">import</span> antlr4.TitleDetectParser;</span><br><span class="line"><span class="keyword">import</span> org.antlr.v4.runtime.CharStreams;</span><br><span class="line"><span class="keyword">import</span> org.antlr.v4.runtime.CommonTokenStream;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Main</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">Scanner</span> <span class="variable">scanner</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Scanner</span>(Main.class.getClassLoader().getResourceAsStream(<span class="string">&quot;input.txt&quot;</span>));</span><br><span class="line">        <span class="keyword">while</span> (scanner.hasNext()) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">input</span> <span class="operator">=</span> scanner.nextLine();</span><br><span class="line">            <span class="type">TitleDetectLexer</span> <span class="variable">lexer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TitleDetectLexer</span>(CharStreams.fromString(input));</span><br><span class="line">            lexer.removeErrorListeners(); <span class="comment">//去除默认的错误处理工具，否则会在stdout中答应错误信息</span></span><br><span class="line">            <span class="type">CommonTokenStream</span> <span class="variable">tokens</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CommonTokenStream</span>(lexer);</span><br><span class="line">            <span class="type">TitleDetectParser</span> <span class="variable">parser</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TitleDetectParser</span>(tokens);</span><br><span class="line">            parser.removeErrorListeners(); <span class="comment">//去除默认的错误处理工具，否则会在stdout中答应错误信息</span></span><br><span class="line">            <span class="type">ResultWrapper</span> <span class="variable">result</span> <span class="operator">=</span> parser.expr().accept(<span class="keyword">new</span> <span class="title class_">TitleDetectVisitorImpl</span>());</span><br><span class="line">            <span class="keyword">if</span> (parser.getNumberOfSyntaxErrors() == <span class="number">0</span></span><br><span class="line">                    &amp;&amp; !result.level.isEmpty()) &#123;</span><br><span class="line">                System.out.format(<span class="string">&quot;%s : %s\n&quot;</span>, input, result);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        scanner.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TitleDetectVisitorImpl</span> <span class="keyword">extends</span> <span class="title class_">TitleDetectBaseVisitor</span>&lt;ResultWrapper&gt; &#123;</span><br><span class="line">    Map&lt;String, Integer&gt; cn2int = Map.of(<span class="string">&quot;一&quot;</span>, <span class="number">1</span>, <span class="string">&quot;二&quot;</span>, <span class="number">2</span>, <span class="string">&quot;三&quot;</span>, <span class="number">3</span>, <span class="string">&quot;四&quot;</span>, <span class="number">4</span>, <span class="string">&quot;五&quot;</span>, <span class="number">5</span>, <span class="string">&quot;六&quot;</span>, <span class="number">6</span>, <span class="string">&quot;七&quot;</span>, <span class="number">7</span>, <span class="string">&quot;八&quot;</span>, <span class="number">8</span>, <span class="string">&quot;九&quot;</span>, <span class="number">9</span>, <span class="string">&quot;十&quot;</span>, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    List&lt;Integer&gt; level = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">    <span class="type">StringBuilder</span> <span class="variable">sb</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StringBuilder</span>();</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">visitTitle_begin</span><span class="params">(TitleDetectParser.Title_beginContext ctx)</span> &#123;</span><br><span class="line">        sb.append(ctx.getText());</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.visitTitle_begin(ctx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">visitSplite</span><span class="params">(TitleDetectParser.SpliteContext ctx)</span> &#123;</span><br><span class="line">        sb.append(ctx.getText());</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.visitSplite(ctx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">visitNum</span><span class="params">(TitleDetectParser.NumContext ctx)</span> &#123;</span><br><span class="line">        sb.append(<span class="string">&quot;num&quot;</span>);</span><br><span class="line">        level.add(Integer.valueOf(ctx.getText()));</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.visitNum(ctx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">visitNum_cn</span><span class="params">(TitleDetectParser.Num_cnContext ctx)</span> &#123;</span><br><span class="line">        sb.append(<span class="string">&quot;num_cn&quot;</span>);</span><br><span class="line">        level.add(cn2int.get(ctx.getText()));</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.visitNum_cn(ctx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">visitMultive_level_num_splite</span><span class="params">(TitleDetectParser.Multive_level_num_spliteContext ctx)</span> &#123;</span><br><span class="line">        sb.append(ctx.getText());</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">super</span>.visitMultive_level_num_splite(ctx);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> ResultWrapper <span class="title function_">defaultResult</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ResultWrapper</span>(sb.toString(), level);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ResultWrapper</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> String patten;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">final</span> List&lt;Integer&gt; level;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    ResultWrapper(String patten, List&lt;Integer&gt; level) &#123;</span><br><span class="line">        <span class="built_in">this</span>.patten = patten;</span><br><span class="line">        <span class="built_in">this</span>.level = level;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;ResultWrapper&#123;&quot;</span> +</span><br><span class="line">                <span class="string">&quot;patten=&#x27;&quot;</span> + patten + <span class="string">&#x27;\&#x27;&#x27;</span> +</span><br><span class="line">                <span class="string">&quot;, level=&quot;</span> + level +</span><br><span class="line">                <span class="string">&#x27;&#125;&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="演示结果">演示结果</h3>
+<img src="/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D/%E6%BC%94%E7%A4%BA%E7%BB%93%E6%9E%9C.png" class="" title="演示结果">
+<p>此处拿到了标题的patten，并且可以拿到对应的标题中编号数值及编号层级，在此基础上可以进行对标题层级的还原。</p>
+<p>基于语法树的方式相较基于正则的方式在后续维护过程中更为直观，并且在灵活性和性能上也更高。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://codexvn.top">codexvn</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://codexvn.top/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D.html">https://codexvn.top/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://codexvn.top" target="_blank">徇的小站</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/NLP-ANTLR4-JAVA/">NLP ANTLR4 JAVA</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.html" title="conda环境中共享库找不到问题原因及解决方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">conda环境中共享库找不到问题原因及解决方案</div></div></a></div><div class="next-post pull-right"><a href="/2023/hexo%E5%B0%86%E5%9B%BE%E7%89%87%E5%8F%91%E5%B8%83%E4%B8%BA%E7%BD%91%E7%AB%99%E9%9D%99%E6%80%81%E8%B5%84%E6%BA%90.html" title="hexo将图片发布为网站静态资源"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">hexo将图片发布为网站静态资源</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">codexvn</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E8%AF%AD%E6%B3%95%E6%A0%91"><span class="toc-number">2.</span> <span class="toc-text">构建语法树</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E9%A2%98%E8%AF%86%E5%88%AB%E7%9A%84%E6%80%9D%E8%B7%AF"><span class="toc-number">2.1.</span> <span class="toc-text">标题识别的思路</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E6%9E%84%E5%BB%BA%E8%AF%AD%E6%B3%95%E6%A0%91"><span class="toc-number">2.2.</span> <span class="toc-text">开始构建语法树</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8antlr4-maven-plugin%E6%8F%92%E4%BB%B6%E8%BF%9B%E8%A1%8C%E7%BC%96%E8%AF%91"><span class="toc-number">2.3.</span> <span class="toc-text">使用antlr4-maven-plugin插件进行编译</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E4%BA%8E%E6%B5%8B%E8%AF%95%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">3.</span> <span class="toc-text">用于测试的文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%94%E7%A4%BA%E4%BB%A3%E7%A0%81"><span class="toc-number">4.</span> <span class="toc-text">演示代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BC%94%E7%A4%BA%E7%BB%93%E6%9E%9C"><span class="toc-number">5.</span> <span class="toc-text">演示结果</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB.html" title="开发工具数据迁移">开发工具数据迁移</a><time datetime="2025-08-14T08:23:26.000Z" title="发表于 2025-08-14 16:23:26">2025-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E4%BD%BF%E7%94%A8Antlr4%E6%9D%A5%E8%A7%A3%E6%9E%90P%E7%A4%BE%E6%B8%B8%E6%88%8F%E7%BE%A4%E6%98%9F-stellaris-%E7%9A%84%E7%A7%91%E6%8A%80%E6%A0%91.html" title="使用Antlr4来解析P社游戏群星[stellaris]的科技树">使用Antlr4来解析P社游戏群星[stellaris]的科技树</a><time datetime="2025-05-18T10:13:06.000Z" title="发表于 2025-05-18 18:13:06">2025-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E5%AE%89%E8%A3%85LiveCD.html" title="在磁盘上安装LiveCD">在磁盘上安装LiveCD</a><time datetime="2025-04-25T12:16:12.000Z" title="发表于 2025-04-25 20:16:12">2025-04-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By codexvn</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'light'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-mapping': 'pathname',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment= loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

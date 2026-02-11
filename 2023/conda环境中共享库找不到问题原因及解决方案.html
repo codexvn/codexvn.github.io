@@ -1,0 +1,280 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>conda环境中共享库找不到问题原因及解决方案 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景 今天使用micromamba新建了一个环境来试试latex-ocr+paddle ocr的效果 1micromamba create -n latex-ocr python&#x3D;3.8 cudatoolkit&#x3D;10.2 cudnn 环境创建完成之后切换环境并安装依赖 12micromamba activate latex-ocrpip install -r requirements.txt 然后">
+<meta property="og:type" content="article">
+<meta property="og:title" content="conda环境中共享库找不到问题原因及解决方案">
+<meta property="og:url" content="https://codexvn.top/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="背景 今天使用micromamba新建了一个环境来试试latex-ocr+paddle ocr的效果 1micromamba create -n latex-ocr python&#x3D;3.8 cudatoolkit&#x3D;10.2 cudnn 环境创建完成之后切换环境并安装依赖 12micromamba activate latex-ocrpip install -r requirements.txt 然后">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2023-10-14T04:25:44.000Z">
+<meta property="article:modified_time" content="2026-02-11T07:22:40.777Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="conda">
+<meta property="article:tag" content="mamba">
+<meta property="article:tag" content="microconda">
+<meta property="article:tag" content="micromamba">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1T1C5Y5F7W');
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'conda环境中共享库找不到问题原因及解决方案',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-02-11 15:22:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="徇的小站"><span class="site-name">徇的小站</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">conda环境中共享库找不到问题原因及解决方案</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-10-14T04:25:44.000Z" title="发表于 2023-10-14 12:25:44">2023-10-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T07:22:40.777Z" title="更新于 2026-02-11 15:22:40">2026-02-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="conda环境中共享库找不到问题原因及解决方案"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><h3 id="背景">背景</h3>
+<p>今天使用micromamba新建了一个环境来试试latex-ocr+paddle ocr的效果</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">micromamba create -n latex-ocr python=3.8 cudatoolkit=10.2 cudnn</span><br></pre></td></tr></table></figure>
+<p>环境创建完成之后切换环境并安装依赖</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">micromamba activate latex-ocr</span><br><span class="line">pip install -r requirements.txt</span><br></pre></td></tr></table></figure>
+<p>然后开始跑代码</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python main.py</span><br></pre></td></tr></table></figure>
+<h3 id="发现问题">发现问题</h3>
+<p>在跑代码的时候发现报了一个库没有找到的问题</p>
+<img src="/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/2_1.png" class="" title="libcudart.so.10.2">
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">Error: Can not import paddle core while this file exists: /root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/libpaddle.so</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;main.py&quot;, line 6, in &lt;module&gt;</span><br><span class="line">    import apis.latex_ocr</span><br><span class="line">  File &quot;/root/latex-ocr/apis/latex_ocr.py&quot;, line 6, in &lt;module&gt;</span><br><span class="line">    from paddle_detection.engine import EngineWrapper</span><br><span class="line">  File &quot;/root/latex-ocr/paddle_detection/engine.py&quot;, line 1, in &lt;module&gt;</span><br><span class="line">    from paddleocr import PPStructure</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddleocr/__init__.py&quot;, line 14, in &lt;module&gt;</span><br><span class="line">    from .paddleocr import *</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddleocr/paddleocr.py&quot;, line 21, in &lt;module&gt;</span><br><span class="line">    import paddle</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/__init__.py&quot;, line 25, in &lt;module&gt;</span><br><span class="line">    from .framework import monkey_patch_variable</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/framework/__init__.py&quot;, line 17, in &lt;module&gt;</span><br><span class="line">    from . import random  # noqa: F401</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/framework/random.py&quot;, line 16, in &lt;module&gt;</span><br><span class="line">    import paddle.fluid as fluid</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/__init__.py&quot;, line 36, in &lt;module&gt;</span><br><span class="line">    from . import framework</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/framework.py&quot;, line 37, in &lt;module&gt;</span><br><span class="line">    from . import core</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/core.py&quot;, line 338, in &lt;module&gt;</span><br><span class="line">    raise e</span><br><span class="line">  File &quot;/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/core.py&quot;, line 274, in &lt;module&gt;</span><br><span class="line">    from . import libpaddle</span><br><span class="line">ImportError: libcudart.so.10.2: cannot open shared object file: No such file or directory</span><br></pre></td></tr></table></figure>
+<p>但是这个库是存在lib目录下的</p>
+<h3 id="原因">原因</h3>
+<h4 id="conda共享库隔离的实现原理">conda共享库隔离的实现原理</h4>
+<p>Windows上conda隔离共享库的方案与Linux不同</p>
+<h5 id="Linux">Linux</h5>
+<p>linux平台上，conda中下载下来的python二进制文件是被修改过的，通过<code>readelf</code>命令可以看到以下内容</p>
+<img src="/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/3.1.1_1.png" class="">
+<p><code>Library rpath: [$ORIGIN/../lib]</code>这部分是conda对python二进制文件进行的修改，<code>$ORIGIN</code>代表的意思是文件所在的目录，<code>$ORIGIN/../lib</code>所代表的意思是与文件所在目录同级的<code>lib</code>目录。</p>
+<blockquote>
+<p>在Linux中，动态库的搜索路径优先级为：</p>
+<ol>
+<li>rpath</li>
+<li>LD_LIBRARY_PATH环境变量指定的目录</li>
+<li>runpath</li>
+<li>搜索/etc/ld.so.cache缓存</li>
+<li>默认的系统库目录，/lib或者/usr/lib等</li>
+</ol>
+</blockquote>
+<p>conda中隔离环境中的共享库所安装的目录在<code>env/xxx/lib</code>，python命令所在的目录为<code>env/xxx/bin</code>，</p>
+<p>所以当使用conda中下载的python解释器时，<code>$ORIGIN/../lib</code>的优先级最高，会优先使用conda安装到隔离环境，也就是<code>env/xxx/lib</code>中的共享库。</p>
+<h5 id="Windows">Windows</h5>
+<p>windows中就相对糙快猛了，conda将python命令放在<code>env/xxx/</code>目录下，共享库放在<code>env/xxx/Library/bin</code>下，两个目录都被加入到<code>PATH</code>环境变量中，每次执行<code>conda activate</code>命令时会切换<code>PATH</code>中两个目录的地址，实现切换共享库环境。</p>
+<img src="/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/3.1.2_1.png" class="" title="3.1.2_1">
+<h4 id="问题的原因">问题的原因</h4>
+<p>当时运行的环境是Linux，上一节中的方案应该是没有问题的才对，为什么还会找不到库呢？</p>
+<p>加上<code>LD_DEBUG=libs</code>环境变量再执行一次代码，看看程序是如何寻找缺少的<code>libcudart.so.10.2</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_DEBUG=libs python main.py</span><br></pre></td></tr></table></figure>
+<p>从输出中搜索关键字，可以定位到以下内容：</p>
+<img src="/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/3.2.1_1.png" class="">
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">87054:	find library=libcudart.so.10.2 [0]; searching</span><br><span class="line">87054:	 search path=/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/../libs	</span><br><span class="line">                    (RUNPATH from file /root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/libpaddle.so)</span><br><span class="line">87054:	  trying file=/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/../libs/libcudart.so.10.2</span><br><span class="line">87054:	 search cache=/etc/ld.so.cache</span><br><span class="line">87054:	 search path=/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/lib:/usr/lib		(system search path)</span><br><span class="line">87054:	  trying file=/lib/x86_64-linux-gnu/libcudart.so.10.2</span><br><span class="line">87054:	  trying file=/usr/lib/x86_64-linux-gnu/libcudart.so.10.2</span><br><span class="line">87054:	  trying file=/lib/libcudart.so.10.2</span><br><span class="line">87054:	  trying file=/usr/lib/libcudart.so.10.2</span><br></pre></td></tr></table></figure>
+<p>可以看到是<code>libpaddle.so</code>尝试调用<code>libcudart.so.10.2</code>，按顺序尝试了以下目录：</p>
+<ul>
+<li><code>RUNPATH</code>所指定的目录<code>/root/micromamba/envs/latex-ocr/lib/python3.8/site-packages/paddle/fluid/../libs</code></li>
+<li>搜索<code>/etc/ld.so.cache</code>缓存</li>
+<li><code>/lib/x86_64-linux-gnu</code></li>
+<li><code>/usr/lib/x86_64-linux-gnu</code></li>
+<li><code>/lib</code></li>
+<li><code>/usr/lib</code></li>
+</ul>
+<p>虽然conda安装的python解释器通过<code>rpath</code>的方式进行了修改，但是对于paddle的库中so是不生效的，conda把库安装在<code>/root/micromamba/envs/latex-ocr/lib</code>，所以找不到。</p>
+<h3 id="解决方案">解决方案</h3>
+<p>解决方法很简单，指定一个变量来运行就好了</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LD_LIBRARY_PATH=/root/micromamba/envs/latex-ocr/lib python main.py</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/534778561">https://zhuanlan.zhihu.com/p/534778561</a></p>
+<p><a target="_blank" rel="noopener" href="https://amir.rachum.com/shared-libraries/#runtime-search-path">https://amir.rachum.com/shared-libraries/#runtime-search-path</a></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://codexvn.top">codexvn</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://codexvn.top/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.html">https://codexvn.top/2023/conda%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%85%B1%E4%BA%AB%E5%BA%93%E6%89%BE%E4%B8%8D%E5%88%B0%E9%97%AE%E9%A2%98%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://codexvn.top" target="_blank">徇的小站</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/python/">python</a><a class="post-meta__tags" href="/tags/conda/">conda</a><a class="post-meta__tags" href="/tags/mamba/">mamba</a><a class="post-meta__tags" href="/tags/microconda/">microconda</a><a class="post-meta__tags" href="/tags/micromamba/">micromamba</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/windows%E4%B8%8A%E6%B8%B8%E6%88%8F%E5%8A%A0%E9%80%9F%E5%99%A8%E4%B8%8EWSL%E5%85%B1%E5%AD%98.html" title="windows上游戏加速器与WSL共存"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">windows上游戏加速器与WSL共存</div></div></a></div><div class="next-post pull-right"><a href="/2023/%E5%9F%BA%E4%BA%8E%E8%AF%AD%E6%B3%95%E6%A0%91%E5%AF%B9%E6%96%87%E7%AB%A0%E4%B8%AD%E7%9A%84%E7%AB%A0%E8%8A%82%E6%95%B0%E6%8D%AE%E8%BF%9B%E8%A1%8C%E5%8C%B9%E9%85%8D.html" title="基于语法树对文章中的章节数据进行匹配"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">基于语法树对文章中的章节数据进行匹配</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">codexvn</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%91%E7%8E%B0%E9%97%AE%E9%A2%98"><span class="toc-number">2.</span> <span class="toc-text">发现问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.</span> <span class="toc-text">原因</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#conda%E5%85%B1%E4%BA%AB%E5%BA%93%E9%9A%94%E7%A6%BB%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">3.1.</span> <span class="toc-text">conda共享库隔离的实现原理</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Linux"><span class="toc-number">3.1.1.</span> <span class="toc-text">Linux</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Windows"><span class="toc-number">3.1.2.</span> <span class="toc-text">Windows</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-number">3.2.</span> <span class="toc-text">问题的原因</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">解决方案</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB.html" title="开发工具数据迁移">开发工具数据迁移</a><time datetime="2025-08-14T08:23:26.000Z" title="发表于 2025-08-14 16:23:26">2025-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E4%BD%BF%E7%94%A8Antlr4%E6%9D%A5%E8%A7%A3%E6%9E%90P%E7%A4%BE%E6%B8%B8%E6%88%8F%E7%BE%A4%E6%98%9F-stellaris-%E7%9A%84%E7%A7%91%E6%8A%80%E6%A0%91.html" title="使用Antlr4来解析P社游戏群星[stellaris]的科技树">使用Antlr4来解析P社游戏群星[stellaris]的科技树</a><time datetime="2025-05-18T10:13:06.000Z" title="发表于 2025-05-18 18:13:06">2025-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E5%AE%89%E8%A3%85LiveCD.html" title="在磁盘上安装LiveCD">在磁盘上安装LiveCD</a><time datetime="2025-04-25T12:16:12.000Z" title="发表于 2025-04-25 20:16:12">2025-04-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By codexvn</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'light'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-mapping': 'pathname',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment= loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

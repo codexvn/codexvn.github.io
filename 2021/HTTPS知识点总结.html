@@ -1,0 +1,742 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>HTTPS知识点总结 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="熬夜把深入浅出HTTPS:从原理到实战这本书看完了，总结一些主要的知识点，另外劝告各位熬夜伤身体  TLS&#x2F;SSL协议综述 什么是TLS&#x2F;SSL协议 在早期，为了解决HTTP的安全问题，网景公司在1994年创建了SSL协议。一开始SSL协议只是浏览器的一个拓展，后来逐渐发展成一个独立协议，用于保证网络通信的认证和安全，SSL协议有SSLv1、SSLv2、SSLv3。 1996年，IETF（Int">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTPS知识点总结">
+<meta property="og:url" content="https://codexvn.top/2021/HTTPS%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="熬夜把深入浅出HTTPS:从原理到实战这本书看完了，总结一些主要的知识点，另外劝告各位熬夜伤身体  TLS&#x2F;SSL协议综述 什么是TLS&#x2F;SSL协议 在早期，为了解决HTTP的安全问题，网景公司在1994年创建了SSL协议。一开始SSL协议只是浏览器的一个拓展，后来逐渐发展成一个独立协议，用于保证网络通信的认证和安全，SSL协议有SSLv1、SSLv2、SSLv3。 1996年，IETF（Int">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png">
+<meta property="article:published_time" content="2021-06-05T12:29:59.000Z">
+<meta property="article:modified_time" content="2026-02-11T07:22:40.776Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="SSL">
+<meta property="article:tag" content="Https">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2021/HTTPS%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=4.13.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-1T1C5Y5F7W');
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.11.1/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'HTTPS知识点总结',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2026-02-11 15:22:40'
+}</script><script>(win=>{
+      win.saveToLocal = {
+        set: (key, value, ttl) => {
+          if (ttl === 0) return
+          const now = Date.now()
+          const expiry = now + ttl * 86400000
+          const item = {
+            value,
+            expiry
+          }
+          localStorage.setItem(key, JSON.stringify(item))
+        },
+      
+        get: key => {
+          const itemStr = localStorage.getItem(key)
+      
+          if (!itemStr) {
+            return undefined
+          }
+          const item = JSON.parse(itemStr)
+          const now = Date.now()
+      
+          if (now > item.expiry) {
+            localStorage.removeItem(key)
+            return undefined
+          }
+          return item.value
+        }
+      }
+    
+      win.getScript = (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        script.onerror = reject
+        script.onload = script.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          script.onload = script.onreadystatechange = null
+          resolve()
+        }
+
+        Object.keys(attr).forEach(key => {
+          script.setAttribute(key, attr[key])
+        })
+
+        document.head.appendChild(script)
+      })
+    
+      win.getCSS = (url, id = false) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onerror = reject
+        link.onload = link.onreadystatechange = function() {
+          const loadState = this.readyState
+          if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+          link.onload = link.onreadystatechange = null
+          resolve()
+        }
+        document.head.appendChild(link)
+      })
+    
+      win.activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+        if (t === 'dark') activateDarkMode()
+        else if (t === 'light') activateLightMode()
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+      const detectApple = () => {
+        if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+          document.documentElement.classList.add('apple')
+        }
+      }
+      detectApple()
+    })(window)</script><meta name="generator" content="Hexo 7.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="徇的小站"><span class="site-name">徇的小站</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">HTTPS知识点总结</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-06-05T12:29:59.000Z" title="发表于 2021-06-05 20:29:59">2021-06-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-02-11T07:22:40.776Z" title="更新于 2026-02-11 15:22:40">2026-02-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="HTTPS知识点总结"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>熬夜把<code>深入浅出HTTPS:从原理到实战</code>这本书看完了，总结一些主要的知识点，另外劝告各位<strong>熬夜伤身体</strong></p>
+</blockquote>
+<h3 id="TLS-SSL协议综述">TLS/SSL协议综述</h3>
+<h4 id="什么是TLS-SSL协议">什么是TLS/SSL协议</h4>
+<p>在早期，为了解决HTTP的安全问题，网景公司在1994年创建了SSL协议。一开始SSL协议只是浏览器的一个拓展，后来逐渐发展成一个独立协议，用于保证网络通信的认证和安全，SSL协议有SSLv1、SSLv2、SSLv3。</p>
+<p>1996年，IETF（Internet Engineering Task Force）组织在SSLv3的基础上进一步标准化了该协议，微软为这个新协议取名TLS v1.0，目前最新的版本是TLSv1.3</p>
+<h4 id="TLS-SSL协议的目标">TLS/SSL协议的目标</h4>
+<p>TLS/SSL协议在网络模型中位于<code>应用层</code>和<code>传输层</code>之间，构建在TCP上，构建在UDP上的称为<code>DTLS</code>。</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="img" style="zoom: 33%;" />
+<p>TLS/SSL协议有4个目标:</p>
+<ol>
+<li>
+<p>​	加密安全</p>
+<p>通信双方的数据是安全的，不可篡改和伪造。</p>
+</li>
+<li>
+<p>互操作性</p>
+<p>TLS/SSL协议是标准的，任何开发者基于TLS/SSL RFC设计规范都可以实现该协议，开发者也很容易在应用中引入TLS/SSL协议。</p>
+</li>
+<li>
+<p>可扩展性</p>
+<p>密码学算法在不停迭代，随着时间推移会出现更安全的算法，为了保证安全TLS/SSL协议允许动态引入新的算法。在不同的通信环境中TLS/SSL协议允许通信算法协商出一个双方都支持的加密算法，这保证TLS/SSL协议能够工作在各种环境下。</p>
+</li>
+<li>
+<p>效率</p>
+<p>由于TLS/SSL协议涉及了很多密码学算法的运算，因此增加了通信延时和机器负载，但随着TLS/SSL协议的发展，一些新的技术和解决方案正在逐步提升TSL/SSL协议的通信效率</p>
+</li>
+</ol>
+<h4 id="OpenSSL和TLS-SSL的关系">OpenSSL和TLS/SSL的关系</h4>
+<p>TSL/SSL协议的实现有很多种，比如OpenSSL、LibreSSL、BoringSSL，目前最通用的实现是OpenSSL。</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="TLS/SSL协议的一些实现" style="zoom: 50%;" />
+<p>OpenSSL是一个底层密码库，封装了所有的密码学算法、证书管理、TLS/SSL协议实现，集成在大部分操作系统中，可以在代码中调用。而如果只是管理TLS/SSL证书则只需要使用OpenSSL命令行工具。</p>
+<h4 id="HTTPS和TLS-SSL的关系">HTTPS和TLS/SSL的关系</h4>
+<p>TLS/SSL协议位于传输层和应用层之间，HTTP是应用层协议的一种，HTTP+TSL/SSL=HTTPS，应用只需要按照HTTP规范处理HTTP数据即可，对于开发者而言TLS/SSL带来的影响是透明的。</p>
+<p>为了与HTTP区分开，HTTP默认使用80端口，而HTTPS默认使用443端口</p>
+<h3 id="TLS-SSL协议中的算法">TLS/SSL协议中的算法</h3>
+<h4 id="TLS-SSL协议核心三大步骤：认证、密钥协商、数据加密">TLS/SSL协议核心三大步骤：认证、密钥协商、数据加密</h4>
+<ol>
+<li>
+<p>认证</p>
+<p>认证通过<code>PKI技术</code>解决，PKI技术的核心是证书，证书通过密码学算法中的<code>数字签名技术</code>实现。</p>
+<p>证书中包含服务器的身份信息和公钥，在进行<code>密钥协商</code>之前要先证书的认证，即保证通过证书获取到的公钥是服务器的公钥而不是攻击者的公钥。</p>
+</li>
+<li>
+<p>密钥协商</p>
+<p>通过<code>RSA算法</code>或者<code>DH算法</code>，客户端和服务器端会协商出一个<code>预备主密钥</code>，随后预备主密钥通过<code>密钥衍生算法</code>被转换成用于保证机密性和完整性需要的<code>主密钥</code>。</p>
+<p>RSA算法和DH算法都属于<code>公开密钥算法</code>，习惯上称为<code>非对称加密算法</code>。</p>
+</li>
+<li>
+<p>数据加密</p>
+<p>为了保证数据的机密性、完整性和防篡改，需要使用加密算法和MAC算法，前者提供机密性，后者提供完整性和防篡改。</p>
+<p>加密算法分为<code>对称加密算法</code>和<code>非对称加密算法</code>。相对来说，公开密钥算法尤其是RSA算法运算非常缓慢，因此在数据加密部分使用的是对称加密算法，使用<code>会话密钥</code>(即预备主密钥转换出的主密钥)作为加密密钥。</p>
+</li>
+</ol>
+<h4 id="常用密码学算法">常用密码学算法</h4>
+<h5 id="加密基元">加密基元</h5>
+<ol>
+<li>
+<p>加密基元是一些功能单一、可靠的基础算法，通过加密基元构建出各种复杂的算法学算法供人类使用。</p>
+</li>
+<li>
+<p><code>密码学伪随机数生成算法</code>和<code>密码学Hash算法</code>都是密码学中的基础算法，很多其他的密码学算法选择这两个算法作为加密基元。</p>
+</li>
+<li>
+<p>密码学伪随机数生成算法:</p>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="密码学伪随机数生成算法" style="zoom:67%;" />
+<ol start="4">
+<li>密码学Hash算法:</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="密码学Hash算法" style="zoom: 67%;" />
+<h5 id="对称加密算法">对称加密算法</h5>
+<ol>
+<li>对称加密算法就是通过一个算法和一个密钥对明文进行加密获得无意义的密文。</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="对称加密算法" style="zoom:50%;" />
+<ol start="2">
+<li>
+<p>对称加密算法有两种类型，分别是<code>块密码算法</code>和<code>流密码算法</code>，推荐使用块密码算法。</p>
+<ul>
+<li>块密码算法:</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="块密码算法" style="zoom: 67%;" />
+<ul>
+<li>块加密中的迭代模式:</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="块加密中的迭代模式" style="zoom:67%;" />
+<ul>
+<li>流密码算法:</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="流密码算法" style="zoom:67%;" />
+</li>
+<li>
+<p>填充标准</p>
+<p>对于块密码算法来说，明文长度必须是分组长度的倍数，如果不是倍数，必须有一种填充的机制，填充某些数据保证明文长度是分组长度的倍数，常见标准是<code>PKCS#7</code>和<code>PKCS#5</code>子标准中的填充标准。</p>
+</li>
+</ol>
+<h5 id="消息验证码">消息验证码</h5>
+<ol>
+<li>
+<p>消息验证码用于提供数据的完整性，模型为: 	<code>MAC值=mac（消息，密钥）</code>。</p>
+</li>
+<li>
+<p>MAC算法有2种形式，分别是CBC-MAC算法和HMAC算法。其中CBC-MAC算法从块密码算法的CBC分组模式演变而来，HMAC算法使用Hash算法作为加密基元，HMAC结合Hash算法有多种变种，比如HMAC-SHA-1、HMAC-SHA256、HMAC-SHA512。</p>
+</li>
+<li>
+<p>对称加密算法和MAC算法一起使用以提供机密性和完整性和模式称为Authenticated Encryption（AE）加密模式，主要有三种:</p>
+<ul>
+<li>Encrypt-and-MAC (E&amp;M)</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="Encrypt-and-MAC (E&M)" style="zoom: 50%;" />
+<ul>
+<li>MAC-then-Encrypt (MtE)</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="MAC-then-Encrypt (MtE) " style="zoom: 50%;" />
+<ul>
+<li>Encrypt-then-MAC (EtM)</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  alt="Encrypt-then-MAC (EtM)" style="zoom: 50%;" />
+</li>
+<li>
+<p>AEAD加密模式是AE模式的一种变体，减轻了使用者的负担，主要有<code>CCM模式</code>、<code>GCM模式</code>、<code>ChaCha20-Poly1305</code>。</p>
+</li>
+<li>
+<p>加密算法不能提供完整性</p>
+<p>加密算法能够解决机密性的问题，但是不能保证数据是完整的。</p>
+<p>攻击者截获加密数据之后，虽然没有密钥无法解密数据，但是依然可以修改数据，然后将修改后的数据发送给接收端。接收端收到数据之后如果成功解密，此时获取到的数据已经不是原来的数据，因此加密算法能够保证数据不泄露但是不能保证数据不被篡改。</p>
+</li>
+</ol>
+<h5 id="公开密钥算法-非对称加密算法">公开密钥算法/非对称加密算法</h5>
+<ol>
+<li>
+<p>非对称加密算法分为功能很多，能够进行加密解密、密钥协商、数字签名。</p>
+</li>
+<li>
+<p>与对称加密算法不同，非对称加密算法的密钥是一对，分为公钥和私钥。公钥和私钥功能上是一样的，一个密钥加密能够使用另一个密钥解密，但是生成密钥的侧重点不同。</p>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  style="zoom: 50%;" />
+<ol start="3">
+<li>
+<p>PKCS标准</p>
+<p>公开密钥算法的标准称为PKCS（Public KeyCryptography Standards），这个标准由很多的子标准组成，指导使用者正确地使用公开密钥算法。PKCS标准最早是由RSA公司制定的，目前逐步交由标准化组织IETF（Internet Engineering TaskForce）的PKIX工作组来维护。前文中已经提到过<code>PKCS#7</code>和<code>PKCS#5</code>子标准中的填充标准。</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="PKCS标准" style="zoom:67%;" />
+</li>
+</ol>
+<h5 id="密钥协商算法">密钥协商算法</h5>
+<p>协商算法分为RSA算法和DH算法，大概的流程如下：</p>
+<ol>
+<li>
+<p>RSA</p>
+<ul>
+<li>客户端向服务器端发起连接请求，服务器端发送RSA密钥对的公钥给客户端。</li>
+<li>客户端通过随机数生成器生成一个预备主密钥，用服务器的公钥加密并发送给服务器端。</li>
+<li>服务器解密预备主密钥，假如能够正确解密，则说明客户端和服务器端共同协商出一个预备主密钥。</li>
+</ul>
+</li>
+<li>
+<p>DH算法</p>
+<ul>
+<li>
+<p>客户端向服务器端发起连接请求。</p>
+</li>
+<li>
+<p>服务器端生成一个RSA密钥对，并将公钥发送给客户端。</p>
+</li>
+<li>
+<p>服务器端生成DH参数和服务器DH密钥对，用RSA私钥签名DH参数和服务器DH公钥，最后将签名值、DH参数、服务器DH公钥发送给客户端。</p>
+</li>
+<li>
+<p>客户端通过服务器RSA的公钥验证签名，获取到DH参数和服务器DH公钥。</p>
+</li>
+<li>
+<p>客户端通过DH参数生成客户端的DH密钥对，并将客户端DH公钥发送给服务器端。</p>
+</li>
+<li>
+<p>客户端通过客户端DH私钥和服务器端DH公钥计算出预备主密钥。</p>
+</li>
+<li>
+<p>服务器端接收到客户端的DH公钥，结合服务器的DH私钥计算出预备主密钥。</p>
+</li>
+<li>
+<p>最终客户端和服务器端计算出的预备主密钥能够保持一致。</p>
+</li>
+</ul>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="DH算法" style="zoom: 50%;" />
+<p>​		图中的Z就是生成的预备主密钥</p>
+<ol start="3">
+<li>
+<p>DH算法分为2种类型，<code>静态DH算法（DH算法）</code>和<code>临时DH算法（EDH算法）</code>。</p>
+<ul>
+<li>静态DH算法中p和g两个参数永远是固定的，而且服务器的公钥（Ys）也是固定的，虽然节省了CPU资源的消耗，但是一旦服务器对应的DH私钥泄露，就不能保证安全性。</li>
+<li>临时DH算法每次初始化连接时DH密钥对会重新生成，即使密钥泄露也只影响此次通信。</li>
+</ul>
+</li>
+</ol>
+<h5 id="椭圆曲线密码学（ECC）">椭圆曲线密码学（ECC）</h5>
+<ol>
+<li>
+<p>ECC是新一代的公开密钥算法，主要的优点就是安全性，极短的密钥能够提供很大的安全性。</p>
+</li>
+<li>
+<p>比如224比特的ECC密钥和2048比特的RSA密钥可以达到同样的安全水平，由于ECC密钥具有很短的长度，运算速度非常快。</p>
+</li>
+<li>
+<p>ECC可以结合其他公开密钥算法一起使用，比如<code>ECC + DH密钥协商算法 = ECDH密钥协商算法</code>、<code>ECC  +  数字签名DSA算法 = ECDSA数字签名算法</code>。</p>
+</li>
+<li>
+<p>ECC模型中一个关键点称为<code>命名曲线</code>，命名曲线与性能和安全性直接相关，大部分开发者可以直接使用常见的命名曲线</p>
+<p>命名曲线设计标准:</p>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="命名曲线设计标准" style="zoom: 50%;" />
+<p>​	常见命名曲线:</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="常见命名曲线" style="zoom: 50%;" />
+<h5 id="数字签名">数字签名</h5>
+<ol>
+<li>
+<p>消息验证码中的MAC算法只能保证消息不被篡改，但是却无法知道消息的发送者是谁，即无法防抵赖。对于公开密钥加密算法而言，私钥加密过的数据只有公钥才能够解密，即私钥的拥有者不能否认数据是其发出的。</p>
+</li>
+<li>
+<p>RSA属于非对称加密算法，虽然能够用于实现数字签名。</p>
+</li>
+<li>
+<p>数字签名技术有一个标准<code>DSS</code>，其标准算法就是<code>DSA签名算法</code>，只能进行签名，不能进行加密解密。</p>
+</li>
+<li>
+<p>DSA算法能结合ECC，称为ECDSA数字签名算法，ECDSA的安全和性能更有保障。</p>
+</li>
+<li>
+<p>数字签名的流程</p>
+<ul>
+<li>
+<p>签名生成流程:</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="签名生成流程" style="zoom: 50%;" />
+</li>
+<li>
+<p>签名验证流程:</p>
+</li>
+</ul>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="签名验证流程" style="zoom:50%;" />
+<h3 id="HTTPS完整流程">HTTPS完整流程</h3>
+<h4 id="握手层和加密层">握手层和加密层</h4>
+<img src="/2021/HTTPS知识点总结.html"  alt="握手层和加密层" style="zoom:50%;" />
+<p>对于一个HTTPS回话，会先进行TCP的3次握手建立TCP连接，随后交由握手层协商安全通信需要的信息，最后将信息传递给加密层。</p>
+<ol>
+<li>
+<p>使用RSA密码套件</p>
+<img src="/2021/HTTPS知识点总结.html"  alt="RSA密码套件" style="zoom:50%;" />
+</li>
+<li>
+<p>DHE_RSA密码套件</p>
+</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt="DHE_RSA密码套件" style="zoom:50%;" />
+<p>​	可以看到协商密码套件的流程是固定的</p>
+<h4 id="密码套件">密码套件</h4>
+<ol>
+<li>密码套件的结构并没有统一的标准，密码套件决定了用于密钥协商的算法。</li>
+</ol>
+<img src="/2021/HTTPS知识点总结.html"  alt=" 密码套件结构" style="zoom: 50%;" />
+<ol start="2">
+<li>
+<p>为了防止在密钥协商过程中消息被篡改，加密层开始加密HTTP数据之前要先验证协商过程中的数据没有被篡改。</p>
+<ul>
+<li>
+<p>客户端将发送和接收到的所有握手消息组合在一起，然后计算出摘要数据，握手层使用密钥块对摘要数据进行加密和完整性保护，然后发送给服务器。</p>
+</li>
+<li>
+<p>服务器接收到验证消息后，使用加密块解密出摘要数据。</p>
+</li>
+<li>
+<p>紧接着服务器自行计算发送和接收的所有握手消息，再计算出消息的摘要数据，如果摘要数据和解密出的摘要数据相同，代表客户端发送的消息没有被篡改。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="证书">证书</h3>
+<blockquote>
+<p>PKI（Public Key Infrastructure，称为公钥基础设施）是一个集合体，由一系列的软件、硬件、组织、个体、法律、流程组成，主要目的就是向客户端提供服务器身份认证，认证的基础就是必须找到一个可信的第三方组织，认证的技术方案就是数字签名技术。第三方组织能够使用数字签名技术管理证书，包括创建证书、存储证书、更新证书、撤销证书。</p>
+<p>引用自《深入浅出 HTTPS：从原理到实战》</p>
+</blockquote>
+<p>PKI技术有很多标准，HTTPS中最常用的标准是X.509标准和ASN.1标准。</p>
+<ul>
+<li>X.509目前有3个版本，现在最常用的是X.509 V3版本。</li>
+<li>ASN.1类似于JSON或者XML这样的数据结构，用来描述证书结构。</li>
+<li>X.509标准定义了证书应该包含的内容，而为了让机器和人更好地理解和组织X.509标准，可以采用ASN.1标准来描述X.509标准（或者说证书），ASN.1类似于伪代码，是一种可理解的数据结构。</li>
+</ul>
+<h4 id="X-509标准的内容">X.509标准的内容</h4>
+<ul>
+<li>证书的作用，第三方认证机构为服务器实体（end entity）签发证书，证书校验方可以使用证书对服务器实体的身份进行认证。</li>
+<li>证书文件的结构，证书是一个文件，理解证书的结构、属性、值非常重要。</li>
+<li>管理证书，服务器实体（end entity）向CA机构申请证书的流程，CA机构审核服务器实体身份的标准，签发证书的流程。</li>
+<li>校验证书，通过严谨的步骤校验证书，或者说校验服务器实体（end entity）身份，涉及两部分内容，一部分是证书签名校验，涉及证书链的概念。另外一部分是校验服务器实体属性，比如证书包含的域名、证书有效期等。</li>
+<li>证书的撤销问题，包括CRL和OCSP协议等概念。</li>
+</ul>
+<h4 id="PKI的组成">PKI的组成</h4>
+<img src="/2021/HTTPS知识点总结.html"  alt="PKI的组成" style="zoom: 50%;" />
+<ol>
+<li>
+<p>服务器实体，即需要证书的实体，域名的拥有者，服务器需要创建一个<code>CSR</code>文件用于表明身份</p>
+</li>
+<li>
+<p>CA机构，即证书签发机构，验证服务器实体身份之后签发证书</p>
+</li>
+<li>
+<p>RA机构，注册机构，主要审核服务器实体的有效信息，通常CA机构中包含了RA机构</p>
+</li>
+<li>
+<p>证书仓库，CA机构签发的证书都保存在证书仓库中，证书可能被吊销或者过期，CA机构吊销的证书可以通过CRL和OCSP服务查询到</p>
+</li>
+<li>
+<p>证书校验方，即校验证书真实性的软件。为了校验证书，证书校验方必须充分信任第三方CA机构，集成各个CA机构的根证书。最常见的证书校验方是浏览器</p>
+</li>
+</ol>
+<h5 id="证书主要结构">证书主要结构</h5>
+<ol>
+<li>
+<p>version</p>
+<p>证书的版本号，目前有3个版本（v1, v2, v3）</p>
+</li>
+<li>
+<p>serialNumber</p>
+<p>证书编号，对于不同的CA机构，证书编号是无法预测的</p>
+</li>
+<li>
+<p>signature</p>
+<p>证书的签名值，用于验证证书是否被修改。为了让证书校验方能够校验签名，证书中还会包含计算签名使用的<code>签名算法</code>和<code>摘要算法</code></p>
+</li>
+<li>
+<p>issuer</p>
+<p>签发证书的CA机构</p>
+</li>
+<li>
+<p>validity</p>
+<p>证书的有效期，CA机构是赢利的组织，证书使用期限越长价格越高</p>
+</li>
+<li>
+<p>subject</p>
+<p>服务器实体的名称，即证书申请者的名称。这个属性中包含很多信息，早期证书校验方校验证书的时候是将URL中的域名和证书subject值中的CN(Common Name)比较，如果一致，代表证书校验成功。现在由于一张证书可能包含多个域名，所以不再使用CN来校验证书域名了，而使用SAN证书扩展进行域名校验。</p>
+</li>
+<li>
+<p>subjectPublicKeyInfo</p>
+<p>subjectPublicKeyInfo包含两部分信息，分别是公开密钥算法和公钥值</p>
+</li>
+<li>
+<p>issuerUniqueID和subjectUniqueID</p>
+<p>分别代表CA机构和服务器实体的唯一编号，目前已经被相应的证书扩展替代。</p>
+</li>
+<li>
+<p>extension</p>
+<p>扩展是X.509 V3版本引入的，主要是为了扩展证书的含义，在不改变X.509版本的情况下，可以相对方便地增加证书新属性，新添加的扩展是否生效取决于证书校验方。</p>
+<p>extension字段中可以包含多个扩展,每个扩展都有一个critical属性，如果该属性值等于真（TRUE），证书校验方必须严格处理。</p>
+</li>
+</ol>
+<h5 id="证书主要扩展">证书主要扩展</h5>
+<ol>
+<li>
+<p>使用者可选名称（Subject Directory Attributes, SAN扩展）</p>
+<p>在早期的X.509证书中，每个证书包含一个域名，现在可以通过这个拓展在一个证书中包含多个域名。</p>
+</li>
+<li>
+<p>CA密钥标识符（Authority Key Identifier）</p>
+<p>CA密钥标识符表明了哪个CA机构签发了证书。</p>
+</li>
+<li>
+<p>使用者密钥标识符（Subject Key Identifier）</p>
+<p>某个中间证书签署了一个服务器实体证书，中间证书中的使用者密钥标识符就是服务器实体证书的CA密钥标识符。</p>
+</li>
+<li>
+<p>基础约束（basic constraints）</p>
+<p>该扩展表示证书是否能够签发证书。</p>
+</li>
+<li>
+<p>密钥用法（Key Usage）</p>
+<p>定义了证书的用途，证书的用途有身份验证、数字签名、签发证书等，如果基础约束扩展被设置为True，那么该扩展也必须设置。</p>
+</li>
+<li>
+<p>密钥扩展用法（Extended Key Usage）</p>
+<p>表示证书的具体用途，一般是为了约束服务器实体证书，</p>
+</li>
+<li>
+<p>CRL分发点</p>
+<p>证书校验方用于在校验服务器实体证书时校验该证书是否已被吊销</p>
+</li>
+<li>
+<p>CA机构信息（Authority Information Access）</p>
+<p>这个扩展包含了CA机构的一些其他信息，主要的<code>OCSP服务地址</code>和<code>CA Issuers</code></p>
+<ul>
+<li>
+<p>OCSP服务地址也是用于校验证书是否已被吊销。</p>
+<p>与CRL不同，CRL是一个吊销证书列表，校验方需要将整个列表下载下来，然后检查待校验证书是否在这个列表中，这要求校验方经常性更新CRL文件。</p>
+<p>而OCSP服务地址能够根据待校验证书的信息直接返回证书的吊销情况，不需要本地维护吊销列表。</p>
+</li>
+<li>
+<p>CA Issuers保存了中间证书地址，当服务器没有发送完整的证书链是校验方能够从这个地址下载中间证。这保证了当没有获取到完整证书链时校验方能够通过迭代下载自行补全整个证书链。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h5 id="CSR">CSR</h5>
+<p>服务器实体在申请证书之前需要先生成一个CSR文件交给CA机构</p>
+<ol>
+<li>
+<p>CSR文件包括两部分内容：</p>
+<ul>
+<li>
+<p>生成证书的必要信息，比如域名信息、公钥。</p>
+<p>此处的公钥即进行<code>密钥协商</code>时使用的公钥，在进行密钥协商时需要获取到服务器的公钥，SSL/TLS中将公钥存储在证书中，这样既能提供公钥，又能证明公钥的身份，防止了中间人攻击。</p>
+</li>
+<li>
+<p>服务器实体的证明材料，比如域名拥有者所在地区、拥有者名称等。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>CSR文件的生成过程</p>
+<ul>
+<li>服务器实体创建一对非对称加密密钥对。</li>
+<li>服务器生成<code>CertificationRequestInfo</code>结构体，其中包含域名和刚刚创建密钥对中的公钥。</li>
+<li>使用密钥对中的私钥对<code>CertificationRequestInfo</code>结构体进行签名获得签名值。</li>
+<li>组合<code>CertificationRequestInfo</code>结构体和签名值获得<code>CSR</code>文件，将其发送给CA机构。</li>
+</ul>
+</li>
+</ol>
+<h4 id="证书链">证书链</h4>
+<p>从证书链的角度看，证书分为以下三种:</p>
+<ul>
+<li>根证书，又称为自签名证书，处于证书链的最顶端，是CA机构用于签发证书的证书。</li>
+<li>服务器实体证书，处于证书链的最低端，其中包括了服务器实体的信息，服务器实体公钥和域名。</li>
+<li>中间证书 ，处于服务器实体证书和根证书之间，能够用于签发证书，在一条证书链的中间证书可以有多个。</li>
+</ul>
+<img src="/2021/HTTPS知识点总结.html"  style="zoom:50%;" />
+<ol>
+<li>
+<p>每中证书中都包含由CA签发者通过私钥提供的此证书的签名。</p>
+</li>
+<li>
+<p>证书校验方通过签名者证书中的公钥校验当前证书，若证书没有被修改且证书有效则继续向上迭代校验。</p>
+</li>
+<li>
+<p>根证书是证书链的最顶端，它的签名值是自己签名的，证书校验方完全相信根证书。</p>
+</li>
+<li>
+<p>如果整个证书链校验过程没有出现问题则这个服务器实体证书合法，否则证书不合法。</p>
+</li>
+</ol>
+<h4 id="委派和交叉认证">委派和交叉认证</h4>
+<ol>
+<li>
+<p>委派认证</p>
+<ul>
+<li>
+<p>很多企业和个人都会申请证书，如果全部交由根CA机构签发会有很大的压力，并且不同地区语言和政策有所不同，所以根CA机构通常会委派一个中间CA机构，为其签发一张中间CA证书来代替根CA机构签发证书。</p>
+</li>
+<li>
+<p>证书校验方只包含根CA机构的根证书，而根证书的升级是非常麻烦的，而中间证书升级却很简单，只需要为其重新签发一张新的CA证书即可。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>交叉认证</p>
+<p>当一个新的根CA机构要投入使用，新的根CA证书不可能立刻被嵌入到证书校验方的可信任证书列表，解决的方案就是让另外一个根CA机构为其签发一张二级CA证书，由这个二级CA证书签发服务器实体证书，此时这个新CA机构能够立即投入使用。</p>
+</li>
+</ol>
+<h4 id="证书吊销">证书吊销</h4>
+<p>证书吊销有两种状态，分别是：</p>
+<ul>
+<li>永久吊销，表示某张证书永久性地被吊销。</li>
+<li>临时吊销，由于某些原因，某张证书只是临时被吊销。</li>
+</ul>
+<p>证书校验方通过<code>CRL</code>（Certificate Revocation List，证书吊销列表）和<code>OCSP</code>（Online Certificate Status Protocol，在线证书状态协议）来检查证书吊销状态</p>
+<p>OCSP和CRL的区别：</p>
+<ol>
+<li>
+<p>使用CRL校验证书吊销状态的时候，需要下载完整的CRLs文件，然后再进行吊销状态检查。</p>
+</li>
+<li>
+<p>使用OCSP获取证书状态则简单得多，OCSP请求方为了查询某张证书的吊销状态，向OCSP提供方发送一个查询请求，OCSP提供方根据查询条件，直接返回该证书的吊销状态。</p>
+</li>
+<li>
+<p>标准OCSP存在的问题已经由OCSP封套技术解决，OCSP封套技术提升了OCSP的服务质量。</p>
+</li>
+</ol>
+<h4 id="证书透明度">证书透明度</h4>
+<p>证书透明度（Certificate Transparency, CT），通过证书透明度机制，CA机构、服务器实体、客户端能够监控、审计证书的签发、使用，确保证书是被正确使用的。</p>
+<img src="/2021/HTTPS知识点总结.html"  style="zoom:50%;" />
+<h3 id="证书分类">证书分类</h3>
+<ol>
+<li>
+<p>按照验证模式分类</p>
+<p>证书可以分为三种类型，分别是DV证书、OV证书、EV证书，审核难度逐渐增加</p>
+<p>其中DV适合于个人网站，OV证书适合企业和政府机构。</p>
+<p>EV证书申请难度是最高的，对于DV、OV证书，浏览器地址栏上会出现一个绿色小锁图标，而对于EV证书，浏览器地址栏上除了绿色小锁图标，还会出现服务器实体的名称。</p>
+</li>
+<li>
+<p>根据域名进行分类</p>
+<ol>
+<li>
+<p>单域名证书</p>
+<p>即简单的一张证书包含一个域名，比如<code>www.example.com</code></p>
+</li>
+<li>
+<p>泛域名（Wildcard Domain）证书</p>
+<p>一张证书可以包含注册域的所有子域名，比如 <code>*.example.com</code>，这个证书能够用于<code>www1.example.com</code>、<code>www2.example.com</code>等。</p>
+</li>
+<li>
+<p>SAN（Subject Alternative Names）证书</p>
+<p>使用SAN扩展的证书，能够在一张证书中包含多个域名，也被称为多域名证书，相当于将多个单域名证书合并为一个SAN证书。</p>
+</li>
+<li>
+<p>SAN范域名证书</p>
+<p>相当于将多个泛域名证书合并。</p>
+</li>
+</ol>
+</li>
+</ol>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://codexvn.top">codexvn</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://codexvn.top/2021/HTTPS%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93.html">https://codexvn.top/2021/HTTPS%E7%9F%A5%E8%AF%86%E7%82%B9%E6%80%BB%E7%BB%93.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://codexvn.top" target="_blank">徇的小站</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/SSL/">SSL</a><a class="post-meta__tags" href="/tags/Https/">Https</a></div><div class="post_share"><div class="social-share" data-image="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.3/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/%E5%9C%A8Windows%E4%B8%8A%E7%BC%96%E8%AF%91zeal.html" title="在Windows上编译zeal"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">在Windows上编译zeal</div></div></a></div><div class="next-post pull-right"><a href="/2021/%E5%9C%A8RestTemplate%E4%B8%AD%E4%BD%BF%E7%94%A8HttpComponentsClientHttpRequest%E8%A7%A3%E6%9E%90gzip%E7%BC%96%E7%A0%81.html" title="在RestTemplate中使用HttpComponentsClientHttpRequest解析gzip编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">在RestTemplate中使用HttpComponentsClientHttpRequest解析gzip编码</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/let%E2%80%99s-encrypt%E6%B3%9B%E5%9F%9F%E5%90%8D%E5%85%8D%E8%B4%B9SSL%E8%AF%81%E4%B9%A6.html" title="申请Let’s Encrypt的免费SSL证书并在SpringBoot中使用"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-12-31</div><div class="title">申请Let’s Encrypt的免费SSL证书并在SpringBoot中使用</div></div></a></div><div><a href="/2021/%E4%BD%BF%E7%94%A8Fiddler%E5%AF%B9Java%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%8A%93%E5%8C%85.html" title="使用Fiddler对Java程序进行抓包"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-08</div><div class="title">使用Fiddler对Java程序进行抓包</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">codexvn</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">44</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#TLS-SSL%E5%8D%8F%E8%AE%AE%E7%BB%BC%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">TLS&#x2F;SSL协议综述</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFTLS-SSL%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.1.</span> <span class="toc-text">什么是TLS&#x2F;SSL协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#TLS-SSL%E5%8D%8F%E8%AE%AE%E7%9A%84%E7%9B%AE%E6%A0%87"><span class="toc-number">1.2.</span> <span class="toc-text">TLS&#x2F;SSL协议的目标</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#OpenSSL%E5%92%8CTLS-SSL%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.3.</span> <span class="toc-text">OpenSSL和TLS&#x2F;SSL的关系</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#HTTPS%E5%92%8CTLS-SSL%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">1.4.</span> <span class="toc-text">HTTPS和TLS&#x2F;SSL的关系</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#TLS-SSL%E5%8D%8F%E8%AE%AE%E4%B8%AD%E7%9A%84%E7%AE%97%E6%B3%95"><span class="toc-number">2.</span> <span class="toc-text">TLS&#x2F;SSL协议中的算法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#TLS-SSL%E5%8D%8F%E8%AE%AE%E6%A0%B8%E5%BF%83%E4%B8%89%E5%A4%A7%E6%AD%A5%E9%AA%A4%EF%BC%9A%E8%AE%A4%E8%AF%81%E3%80%81%E5%AF%86%E9%92%A5%E5%8D%8F%E5%95%86%E3%80%81%E6%95%B0%E6%8D%AE%E5%8A%A0%E5%AF%86"><span class="toc-number">2.1.</span> <span class="toc-text">TLS&#x2F;SSL协议核心三大步骤：认证、密钥协商、数据加密</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E7%94%A8%E5%AF%86%E7%A0%81%E5%AD%A6%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">常用密码学算法</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%8A%A0%E5%AF%86%E5%9F%BA%E5%85%83"><span class="toc-number">2.2.1.</span> <span class="toc-text">加密基元</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.2.</span> <span class="toc-text">对称加密算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B6%88%E6%81%AF%E9%AA%8C%E8%AF%81%E7%A0%81"><span class="toc-number">2.2.3.</span> <span class="toc-text">消息验证码</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%AC%E5%BC%80%E5%AF%86%E9%92%A5%E7%AE%97%E6%B3%95-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.4.</span> <span class="toc-text">公开密钥算法&#x2F;非对称加密算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%AF%86%E9%92%A5%E5%8D%8F%E5%95%86%E7%AE%97%E6%B3%95"><span class="toc-number">2.2.5.</span> <span class="toc-text">密钥协商算法</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%A4%AD%E5%9C%86%E6%9B%B2%E7%BA%BF%E5%AF%86%E7%A0%81%E5%AD%A6%EF%BC%88ECC%EF%BC%89"><span class="toc-number">2.2.6.</span> <span class="toc-text">椭圆曲线密码学（ECC）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="toc-number">2.2.7.</span> <span class="toc-text">数字签名</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTPS%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B"><span class="toc-number">3.</span> <span class="toc-text">HTTPS完整流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8F%A1%E6%89%8B%E5%B1%82%E5%92%8C%E5%8A%A0%E5%AF%86%E5%B1%82"><span class="toc-number">3.1.</span> <span class="toc-text">握手层和加密层</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E5%A5%97%E4%BB%B6"><span class="toc-number">3.2.</span> <span class="toc-text">密码套件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6"><span class="toc-number">4.</span> <span class="toc-text">证书</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#X-509%E6%A0%87%E5%87%86%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-number">4.1.</span> <span class="toc-text">X.509标准的内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PKI%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">4.2.</span> <span class="toc-text">PKI的组成</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E4%B8%BB%E8%A6%81%E7%BB%93%E6%9E%84"><span class="toc-number">4.2.1.</span> <span class="toc-text">证书主要结构</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E4%B8%BB%E8%A6%81%E6%89%A9%E5%B1%95"><span class="toc-number">4.2.2.</span> <span class="toc-text">证书主要扩展</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CSR"><span class="toc-number">4.2.3.</span> <span class="toc-text">CSR</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E9%93%BE"><span class="toc-number">4.3.</span> <span class="toc-text">证书链</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A7%94%E6%B4%BE%E5%92%8C%E4%BA%A4%E5%8F%89%E8%AE%A4%E8%AF%81"><span class="toc-number">4.4.</span> <span class="toc-text">委派和交叉认证</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E5%90%8A%E9%94%80"><span class="toc-number">4.5.</span> <span class="toc-text">证书吊销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E9%80%8F%E6%98%8E%E5%BA%A6"><span class="toc-number">4.6.</span> <span class="toc-text">证书透明度</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%81%E4%B9%A6%E5%88%86%E7%B1%BB"><span class="toc-number">5.</span> <span class="toc-text">证书分类</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7%E6%95%B0%E6%8D%AE%E8%BF%81%E7%A7%BB.html" title="开发工具数据迁移">开发工具数据迁移</a><time datetime="2025-08-14T08:23:26.000Z" title="发表于 2025-08-14 16:23:26">2025-08-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E4%BD%BF%E7%94%A8Antlr4%E6%9D%A5%E8%A7%A3%E6%9E%90P%E7%A4%BE%E6%B8%B8%E6%88%8F%E7%BE%A4%E6%98%9F-stellaris-%E7%9A%84%E7%A7%91%E6%8A%80%E6%A0%91.html" title="使用Antlr4来解析P社游戏群星[stellaris]的科技树">使用Antlr4来解析P社游戏群星[stellaris]的科技树</a><time datetime="2025-05-18T10:13:06.000Z" title="发表于 2025-05-18 18:13:06">2025-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2025/%E5%9C%A8%E7%A3%81%E7%9B%98%E4%B8%8A%E5%AE%89%E8%A3%85LiveCD.html" title="在磁盘上安装LiveCD">在磁盘上安装LiveCD</a><time datetime="2025-04-25T12:16:12.000Z" title="发表于 2025-04-25 20:16:12">2025-04-25</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2026 By codexvn</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=4.13.0"></script><script src="/js/main.js?v=4.13.0"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.33/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/copy-tex.min.js"></script><script>(() => {
+  document.querySelectorAll('#article-container span.katex-display').forEach(item => {
+    btf.wrap(item, 'div', { class: 'katex-wrap'})
+  })
+})()</script><script>(()=>{
+  const getGiscusTheme = theme => {
+    return theme === 'dark' ? 'dark' : 'light'
+  }
+
+  const loadGiscus = () => {
+    const config = Object.assign({
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-mapping': 'pathname',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true
+    },{"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"})
+
+    const ele = document.createElement('script')
+    for (let key in config) {
+      ele.setAttribute(key, config[key])
+    }
+    document.getElementById('giscus-wrap').appendChild(ele)
+  }
+
+  const changeGiscusTheme = theme => {
+    const sendMessage = message => {
+      const iframe = document.querySelector('iframe.giscus-frame')
+      if (!iframe) return
+      iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app')
+    }
+
+    sendMessage({
+      setConfig: {
+        theme: getGiscusTheme(theme)
+      }
+    });
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment= loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
