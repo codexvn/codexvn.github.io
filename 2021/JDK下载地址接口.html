@@ -1,0 +1,599 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>JDK下载地址接口 | 徇的小站</title><meta name="author" content="codexvn"><meta name="copyright" content="codexvn"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="在Idea上看到这个东西  然后把接口地址抓了出来 1https:&#x2F;&#x2F;download.jetbrains.com&#x2F;jdk&#x2F;feed&#x2F;v1&#x2F;jdks.json.xz  更新： 发现接口末尾可以不加.xz,能直接拿到json 1https:&#x2F;&#x2F;download.jetbrains.com&#x2F;jdk&#x2F;feed&#x2F;v1&#x2F;jdks.json Have Fun!">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDK下载地址接口">
+<meta property="og:url" content="https://codexvn.top/2021/JDK%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80%E6%8E%A5%E5%8F%A3.html">
+<meta property="og:site_name" content="徇的小站">
+<meta property="og:description" content="在Idea上看到这个东西  然后把接口地址抓了出来 1https:&#x2F;&#x2F;download.jetbrains.com&#x2F;jdk&#x2F;feed&#x2F;v1&#x2F;jdks.json.xz  更新： 发现接口末尾可以不加.xz,能直接拿到json 1https:&#x2F;&#x2F;download.jetbrains.com&#x2F;jdk&#x2F;feed&#x2F;v1&#x2F;jdks.json Have Fun!">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://codexvn.top/img/butterfly-icon.png">
+<meta property="article:published_time" content="2021-12-24T11:30:43.000Z">
+<meta property="article:modified_time" content="2026-06-15T16:16:59.969Z">
+<meta property="article:author" content="codexvn">
+<meta property="article:tag" content="JDK">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://codexvn.top/img/butterfly-icon.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "JDK下载地址接口",
+  "url": "https://codexvn.top/2021/JDK%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80%E6%8E%A5%E5%8F%A3.html",
+  "image": "https://codexvn.top/img/butterfly-icon.png",
+  "datePublished": "2021-12-24T11:30:43.000Z",
+  "dateModified": "2026-06-15T16:16:59.969Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "codexvn",
+      "url": "https://codexvn.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://codexvn.top/2021/JDK%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80%E6%8E%A5%E5%8F%A3.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//hm.baidu.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?3f15851ff792ebcd0274c52bbbb9524e";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+btf.addGlobalFn('pjaxComplete', () => {
+  _hmt.push(['_trackPageview',window.location.pathname])
+}, 'baidu_analytics')
+</script><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-1T1C5Y5F7W"></script><script>window.dataLayer = window.dataLayer || []
+function gtag(){dataLayer.push(arguments)}
+gtag('js', new Date())
+gtag('config', 'G-1T1C5Y5F7W')
+btf.addGlobalFn('pjaxComplete', () => {
+  gtag('config', 'G-1T1C5Y5F7W', {'page_path': window.location.pathname})
+}, 'google_analytics')
+</script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'JDK下载地址接口',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">徇的小站</span></a><a class="nav-page-title" href="/"><span class="site-name">JDK下载地址接口</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">JDK下载地址接口</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-12-24T11:30:43.000Z" title="发表于 2021-12-24 19:30:43">2021-12-24</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-15T16:16:59.969Z" title="更新于 2026-06-16 00:16:59">2026-06-16</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%90%8E%E7%AB%AF/">后端</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%90%8E%E7%AB%AF/Java/">Java</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="container post-content" id="article-container"><p>在Idea上看到这个东西</p>
+<p><img src="https://cdn.jsdelivr.net/gh/codexvn/Images@master/2021/JDK%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80%E6%8E%A5%E5%8F%A3/20211224195529-a0c9bf768e24b50e1a493bb1ec641339.png" alt="image-20211224195527289"></p>
+<p>然后把接口地址抓了出来</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://download.jetbrains.com/jdk/feed/v1/jdks.json.xz</span><br></pre></td></tr></table></figure>
+<hr>
+<p>更新：</p>
+<p>发现接口末尾可以不加.xz,能直接拿到json</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://download.jetbrains.com/jdk/feed/v1/jdks.json</span><br></pre></td></tr></table></figure>
+<p>Have Fun!</p>
+</article><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/JDK/">JDK</a><a class="post-meta__tags" href="/tags/Java/">Java</a></div><div class="post-share"><div class="social-share" data-image="/img/butterfly-icon.png" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2022/SpringCloudAlibaba%E6%96%87%E6%A1%A3%E6%B1%87%E6%80%BB.html" title="SpringCloudAlibaba文档汇总"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">SpringCloudAlibaba文档汇总</div></div><div class="info-2"><div class="info-item-1">Sentinel wiki 注解支持 Seata seata.io/zh-cn/docs/ops/deploy-guide-beginner.html </div></div></div></a><a class="pagination-related" href="/2021/%E4%BD%BF%E7%94%A8Fiddler%E5%AF%B9Java%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%8A%93%E5%8C%85.html" title="使用Fiddler对Java程序进行抓包"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">使用Fiddler对Java程序进行抓包</div></div><div class="info-2"><div class="info-item-1">Fiddler是常用的一个抓包工具，可以通过这个工具对Java程序的进行抓包。   第一步是设置代理 1234static &#123;    System.setProperty(&quot;proxyHost&quot;, &quot;localhost&quot;);    System.setProperty(&quot;proxyPort&quot;, &quot;8888&quot;);&#125; 或者添加JVM参数：-DproxyHost=localhost -DproxyPort=8888  网上很多教程是将Http的代理和Https的代理分开，实际上通过proxyPort和proxyHost两个属性能够一次性设置Http的代理和Https的代理。 分析源码中的DefaultProxySelector类可以看到这段话： 12345678910111213141516171819202122232425262728/** * This is where we define all the valid System Properties we have to * s...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2021/%E5%9C%A8RestTemplate%E4%B8%AD%E4%BD%BF%E7%94%A8HttpComponentsClientHttpRequest%E8%A7%A3%E6%9E%90gzip%E7%BC%96%E7%A0%81.html" title="在RestTemplate中使用HttpComponentsClientHttpRequest解析gzip编码"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-03-26</div><div class="info-item-2">在RestTemplate中使用HttpComponentsClientHttpRequest解析gzip编码</div></div><div class="info-2"><div class="info-item-1"> Illegal character ((CTRL-CHAR, code 31)): only regular white space (\r, \n, \t) is allowed between tokens  今天在使用RestTemplate调用接口时发现无法对Gzip的数据进行解压，然后找到了这篇文章:  让RestTemplate使用和解析gzip编码。 原因 文章提到RestTemplate默认不使用Gzip，也不解析 Gzip编码结果，这是因为RestTemplate默认SimpleBufferingClientHttpRequest类。通过idea可以看到RestTemplate的继承关系    在HttpAccessor类中，ClientHttpRequestFactory这个private属性的默认值为一个SimpleClientHttpRequestFactory对象    RestTemplate在获取数据时getForObject、getForEntity、postForObject、postForEntity、exchange等方法最终都是调用exe...</div></div></div></a><a class="pagination-related" href="/2024/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E8%83%BD%E5%A4%9F%E8%87%AA%E5%8A%A8%E5%88%A0%E9%99%A4%E7%9A%84%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6.html" title="实现一个能够自动删除的临时文件"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-08-09</div><div class="info-item-2">实现一个能够自动删除的临时文件</div></div><div class="info-2"><div class="info-item-1">背景 前段时间在弄关于文档转图片然后进行处理的工作,其中由于图片内容会多次读取,所以将其持久化在本地。 但是由于图片是临时文件,所以需要在使用完之后删除。 最初的实现是使用try-with-resource,但是随着流程变得复杂,图片的生命周期变得不可控,所以需要一个更好的解决方案。 思路  利用Cleaner的特性,在文件被GC回收时,进行删除操作。需要注意不要在cleaner中应用this对象,否则会导致内存泄漏。 利用MDC保存当前线程的MDC信息,这样cleaner执行时,用于跟踪上下文的MDC可以保留,使得traceId等信息不会丢失。  实现 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556package com.haizhi.metis.document.parse.common;import java.io.File;import java.io.IOException;import java.lang.re...</div></div></div></a><a class="pagination-related" href="/2024/%E8%AE%A9%E8%87%AA%E5%AE%9A%E4%B9%89%E6%B3%A8%E8%A7%A3%E6%94%AF%E6%8C%81%E9%85%8D%E7%BD%AE%E5%B1%9E%E6%80%A7%E6%B3%A8%E5%85%A5.html" title="让自定义注解支持配置属性注入"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2024-07-15</div><div class="info-item-2">让自定义注解支持配置属性注入</div></div><div class="info-2"><div class="info-item-1">背景 在写代码的过程中需要用到一些自定义annotation，但是annotation中的String类型的value需要字符串常量，于是想是否可以将@Value所支持的表达式移植到自定义注解中。 实现  Spring中的具体实现   org.springframework.beans.factory.support.DefaultListableBeanFactory#doResolveDependency  123456789101112131415161718Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);if (value != null) &#123;    if (value instanceof String) &#123;        String strVal = resolveEmbeddedValue((String) value);        BeanDefinition bd = (beanName != null &amp;&amp; cont...</div></div></div></a><a class="pagination-related" href="/2021/%E4%BD%BF%E7%94%A8Fiddler%E5%AF%B9Java%E7%A8%8B%E5%BA%8F%E8%BF%9B%E8%A1%8C%E6%8A%93%E5%8C%85.html" title="使用Fiddler对Java程序进行抓包"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2021-10-08</div><div class="info-item-2">使用Fiddler对Java程序进行抓包</div></div><div class="info-2"><div class="info-item-1">Fiddler是常用的一个抓包工具，可以通过这个工具对Java程序的进行抓包。   第一步是设置代理 1234static &#123;    System.setProperty(&quot;proxyHost&quot;, &quot;localhost&quot;);    System.setProperty(&quot;proxyPort&quot;, &quot;8888&quot;);&#125; 或者添加JVM参数：-DproxyHost=localhost -DproxyPort=8888  网上很多教程是将Http的代理和Https的代理分开，实际上通过proxyPort和proxyHost两个属性能够一次性设置Http的代理和Https的代理。 分析源码中的DefaultProxySelector类可以看到这段话： 12345678910111213141516171819202122232425262728/** * This is where we define all the valid System Properties we have to * s...</div></div></div></a><a class="pagination-related" href="/2022/EazyExcel%E4%B8%8E@Accessors,@Builder%E4%B8%8E@SuperBuilder.html" title="EasyExcel与@Accessors,@Builder与@SuperBuilder"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-12</div><div class="info-item-2">EasyExcel与@Accessors,@Builder与@SuperBuilder</div></div><div class="info-2"><div class="info-item-1">在使用EasyExcel时发现在解析Excel文件时，发现单元格中的数据无法被注入到对象中，随后去EasyExcel项目的issues区发现这是个老问题了:https://github.com/alibaba/easyexcel/issues?q=Accessors 原因分析 在接收Excel数据的对象的构造方法上打断点，并查看方法的调用链可以看到这个方法:  123456789101112131415161718192021222324252627282930private Object buildUserModel(Map&lt;Integer, ReadCellData&lt;?&gt;&gt; cellDataMap, ReadSheetHolder readSheetHolder,    AnalysisContext context) &#123;    ExcelReadHeadProperty excelReadHeadProperty = readSheetHolder.excelReadHeadProperty();    Object resultModel...</div></div></div></a><a class="pagination-related" href="/2022/%E5%A6%82%E4%BD%95%E8%AE%BE%E7%BD%AEJava%E5%BA%94%E7%94%A8%E7%9A%84%E6%97%B6%E5%8C%BA.html" title="如何设置Java应用的时区"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-18</div><div class="info-item-2">如何设置Java应用的时区</div></div><div class="info-2"><div class="info-item-1">最近研究时区问题的时候发现Linux上的Java时区设置简单中带着一些不简单，翻了翻jvm的源码把这部分的逻辑理清楚了 JVM如何获取获取当前时区 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465  public static TimeZone getDefault() &#123;    return (TimeZone) getDefaultRef().clone();&#125;/*** Returns the reference to the default TimeZone object. This* method doesn&#x27;t create a clone.*/static TimeZone getDefaultRef() &#123;    TimeZone defaultZone = defaultTimeZone;    if (defaultZone == ...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">codexvn</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">29</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">62</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">13</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/codexvn"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%B8%80%E6%AC%A1Claude-Code%E7%BC%93%E5%AD%98%E5%B4%A9%E6%BA%83%E7%9A%84%E5%AE%8C%E6%95%B4%E6%BA%AF%E6%BA%90.html" title="一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅">一次 Claude Code 缓存崩溃的完整溯源——从 99% 暴跌到 0.4% 的数据→源码→验证之旅</a><time datetime="2026-06-15T10:00:00.000Z" title="发表于 2026-06-15 18:00:00">2026-06-15</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/AI%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF.html" title="AI 系统的沙盒执行环境设计思路">AI 系统的沙盒执行环境设计思路</a><time datetime="2026-05-23T04:00:00.000Z" title="发表于 2026-05-23 12:00:00">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/Chrome%E7%BF%BB%E8%AF%91%E5%BC%BA%E5%88%B6%E4%BB%A3%E7%90%86%E6%96%B9%E6%A1%88.html" title="Chrome 翻译强制代理方案">Chrome 翻译强制代理方案</a><time datetime="2026-05-22T16:19:31.000Z" title="发表于 2026-05-23 00:19:31">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E9%80%9A%E8%BF%87%E4%BB%A3%E7%A0%81%E5%AF%B9%E6%8E%A5ConvertX.html" title="通过代码对接ConvertX">通过代码对接ConvertX</a><time datetime="2026-02-08T12:39:06.000Z" title="发表于 2026-02-08 20:39:06">2026-02-08</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/%E4%BD%99%E5%BC%A6%E7%9B%B8%E4%BC%BC%E5%BA%A6%E7%9A%84%E6%8E%A8%E5%AF%BC%E4%BB%A5%E5%8F%8A%E4%B8%8D%E5%BD%B1%E5%93%8D%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%E7%9A%84%E5%90%91%E9%87%8F%E7%BB%B4%E5%BA%A6%E6%8B%93%E5%B1%95%E6%96%B9%E6%B3%95.html" title="余弦相似度的推导以及不影响相似度计算的向量维度拓展方法">余弦相似度的推导以及不影响相似度计算的向量维度拓展方法</a><time datetime="2026-01-22T08:43:27.000Z" title="发表于 2026-01-22 16:43:27">2026-01-22</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By codexvn</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(async () => {
+  const showKatex = () => {
+    document.querySelectorAll('#article-container .katex').forEach(el => el.classList.add('katex-show'))
+  }
+
+  if (!window.katex_js_css) {
+    window.katex_js_css = true
+    await btf.getCSS('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/katex.min.css')
+    if (true) {
+      await btf.getScript('https://cdn.jsdelivr.net/npm/katex@0.16.28/dist/contrib/copy-tex.min.js')
+    }
+  }
+
+  showKatex()
+})()</script><script>(() => {
+  const parseViewBox = viewBox => {
+    if (!viewBox) return null
+    const parts = viewBox.trim().split(/[\s,]+/).map(n => Number(n))
+    if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return null
+    return parts
+  }
+
+  const getSvgViewBox = svg => {
+    const attr = parseViewBox(svg.getAttribute('viewBox'))
+    if (attr) return attr
+
+    // Fallback: use bbox to build a viewBox
+    try {
+      const bbox = svg.getBBox()
+      if (bbox && bbox.width && bbox.height) return [bbox.x, bbox.y, bbox.width, bbox.height]
+    } catch (e) {
+      // getBBox may fail on some edge cases; ignore
+    }
+
+    const w = Number(svg.getAttribute('width')) || 0
+    const h = Number(svg.getAttribute('height')) || 0
+    if (w > 0 && h > 0) return [0, 0, w, h]
+    return [0, 0, 100, 100]
+  }
+
+  const setSvgViewBox = (svg, vb) => {
+    svg.setAttribute('viewBox', `${vb[0]} ${vb[1]} ${vb[2]} ${vb[3]}`)
+  }
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+  const openSvgInNewTab = ({ source, initViewBox }) => {
+    const getClonedSvg = () => {
+      if (typeof source === 'string') {
+        const template = document.createElement('template')
+        template.innerHTML = source.trim()
+        const svg = template.content.querySelector('svg')
+        return svg ? svg.cloneNode(true) : null
+      }
+      if (source && typeof source.cloneNode === 'function') {
+        return source.cloneNode(true)
+      }
+      return null
+    }
+
+    const clone = getClonedSvg()
+    if (!clone) return
+    if (initViewBox && initViewBox.length === 4) {
+      clone.setAttribute('viewBox', initViewBox.join(' '))
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    if (!clone.getAttribute('xmlns:xlink') && clone.outerHTML.includes('xlink:')) {
+      clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    }
+    // inject background to match current theme
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+    const bg = getComputedStyle(document.body).backgroundColor || (isDark ? '#1e1e1e' : '#ffffff')
+    if (!clone.style.background) clone.style.background = bg
+
+    const serializer = new XMLSerializer()
+    const svgSource = serializer.serializeToString(clone)
+    const htmlSource = `<!doctype html><html><head><meta charset="utf-8" />
+      <style>
+        html, body { width: 100%; height: 100%; margin: 0; display: flex; align-items: center; justify-content: center; background: ${bg}; }
+        svg { max-width: 100%; max-height: 100%; height: auto; width: auto; }
+      </style>
+      </head><body>${svgSource}</body></html>`
+    const blob = new Blob([htmlSource], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    window.open(url, '_blank', 'noopener')
+    setTimeout(() => URL.revokeObjectURL(url), 30000)
+  }
+
+  const attachMermaidViewerButton = wrap => {
+    let btn = wrap.querySelector('.mermaid-open-btn')
+    if (!btn) {
+      btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = 'mermaid-open-btn'
+      wrap.appendChild(btn)
+    }
+
+    btn.innerHTML = '<i class="fa fa-search fa-fw" aria-hidden="true"></i>'
+
+    if (!btn.__mermaidViewerBound) {
+      btn.addEventListener('click', e => {
+        e.preventDefault()
+        e.stopPropagation()
+        const svg = wrap.__mermaidOriginalSvg || wrap.querySelector('svg')
+        if (!svg) return
+        const initViewBox = wrap.__mermaidInitViewBox
+        if (typeof svg === 'string') {
+          openSvgInNewTab({ source: svg, initViewBox })
+          return
+        }
+        openSvgInNewTab({ source: svg, initViewBox })
+      })
+      btn.__mermaidViewerBound = true
+    }
+  }
+
+  // Zoom around a point (px, py) in the SVG viewport (in viewBox coordinates)
+  const zoomAtPoint = (vb, factor, px, py) => {
+    const w = vb[2] * factor
+    const h = vb[3] * factor
+    const nx = px - (px - vb[0]) * factor
+    const ny = py - (py - vb[1]) * factor
+    return [nx, ny, w, h]
+  }
+
+  const initMermaidGestures = wrap => {
+    const svg = wrap.querySelector('svg')
+    if (!svg) return
+
+    // Ensure viewBox exists so gestures always work
+    const initVb = getSvgViewBox(svg)
+    wrap.__mermaidInitViewBox = initVb
+    wrap.__mermaidCurViewBox = initVb.slice()
+    setSvgViewBox(svg, initVb)
+
+    // Avoid binding multiple times on themeChange/pjax
+    if (wrap.__mermaidGestureBound) return
+    wrap.__mermaidGestureBound = true
+
+    // Helper: map client (viewport) coordinate -> viewBox coordinate
+    const clientToViewBox = (clientX, clientY) => {
+      const rect = svg.getBoundingClientRect()
+      const vb = wrap.__mermaidCurViewBox || getSvgViewBox(svg)
+      const x = vb[0] + (clientX - rect.left) * (vb[2] / rect.width)
+      const y = vb[1] + (clientY - rect.top) * (vb[3] / rect.height)
+      return { x, y, rect, vb }
+    }
+
+    const state = {
+      pointers: new Map(),
+      startVb: null,
+      startDist: 0,
+      startCenter: null
+    }
+
+    const clampVb = vb => {
+      const init = wrap.__mermaidInitViewBox || vb
+      const minW = init[2] * 0.1
+      const maxW = init[2] * 10
+      const minH = init[3] * 0.1
+      const maxH = init[3] * 10
+      vb[2] = clamp(vb[2], minW, maxW)
+      vb[3] = clamp(vb[3], minH, maxH)
+      return vb
+    }
+
+    const setCurVb = vb => {
+      vb = clampVb(vb)
+      wrap.__mermaidCurViewBox = vb
+      setSvgViewBox(svg, vb)
+    }
+
+    const onPointerDown = e => {
+      // Allow only primary button for mouse
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      svg.setPointerCapture(e.pointerId)
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      if (state.pointers.size === 1) {
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      } else if (state.pointers.size === 2) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        state.startDist = Math.hypot(dx, dy)
+        state.startVb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        state.startCenter = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 }
+      }
+    }
+
+    const onPointerMove = e => {
+      if (!state.pointers.has(e.pointerId)) return
+      state.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+
+      // Pan with 1 pointer
+      if (state.pointers.size === 1 && state.startVb) {
+        const p = [...state.pointers.values()][0]
+        const prev = { x: e.clientX - e.movementX, y: e.clientY - e.movementY }
+        // movementX/Y unreliable on touch, compute from stored last position
+        const last = wrap.__mermaidLastSinglePointer || p
+        const dxClient = p.x - last.x
+        const dyClient = p.y - last.y
+        wrap.__mermaidLastSinglePointer = p
+
+        const { rect } = clientToViewBox(p.x, p.y)
+        const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+        const dx = dxClient * (vb[2] / rect.width)
+        const dy = dyClient * (vb[3] / rect.height)
+        setCurVb([vb[0] - dx, vb[1] - dy, vb[2], vb[3]])
+        return
+      }
+
+      // Pinch zoom with 2 pointers
+      if (state.pointers.size === 2 && state.startVb && state.startDist > 0) {
+        const pts = [...state.pointers.values()]
+        const dx = pts[0].x - pts[1].x
+        const dy = pts[0].y - pts[1].y
+        const dist = Math.hypot(dx, dy)
+        if (!dist) return
+        const factor = state.startDist / dist // dist bigger => zoom in (viewBox smaller)
+
+        const cx = (pts[0].x + pts[1].x) / 2
+        const cy = (pts[0].y + pts[1].y) / 2
+        const centerClient = { x: cx, y: cy }
+
+        const pxy = clientToViewBox(centerClient.x, centerClient.y)
+        const cpx = pxy.x
+        const cpy = pxy.y
+
+        const vb = zoomAtPoint(state.startVb, factor, cpx, cpy)
+        setCurVb(vb)
+      }
+    }
+
+    const onPointerUpOrCancel = e => {
+      state.pointers.delete(e.pointerId)
+      if (state.pointers.size === 0) {
+        state.startVb = null
+        state.startDist = 0
+        state.startCenter = null
+        wrap.__mermaidLastSinglePointer = null
+      } else if (state.pointers.size === 1) {
+        // reset single pointer baseline to avoid jump
+        wrap.__mermaidLastSinglePointer = [...state.pointers.values()][0]
+      }
+    }
+
+    // Wheel zoom (mouse/trackpad)
+    const onWheel = e => {
+      // ctrlKey on mac trackpad pinch; we treat both as zoom
+      e.preventDefault()
+      const delta = e.deltaY
+      const zoomFactor = delta > 0 ? 1.1 : 0.9
+      const { x, y } = clientToViewBox(e.clientX, e.clientY)
+      const vb = (wrap.__mermaidCurViewBox || getSvgViewBox(svg)).slice()
+      setCurVb(zoomAtPoint(vb, zoomFactor, x, y))
+    }
+
+    const onDblClick = () => {
+      const init = wrap.__mermaidInitViewBox
+      if (!init) return
+      wrap.__mermaidCurViewBox = init.slice()
+      setSvgViewBox(svg, init)
+    }
+
+    svg.addEventListener('pointerdown', onPointerDown)
+    svg.addEventListener('pointermove', onPointerMove)
+    svg.addEventListener('pointerup', onPointerUpOrCancel)
+    svg.addEventListener('pointercancel', onPointerUpOrCancel)
+    svg.addEventListener('wheel', onWheel, { passive: false })
+    svg.addEventListener('dblclick', onDblClick)
+  }
+
+  const runMermaid = ele => {
+    window.loadMermaid = true
+    const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'neutral'
+
+    ele.forEach((item, index) => {
+      const mermaidSrc = item.firstElementChild
+
+      // Clear old render (themeChange/pjax will rerun)
+      const oldSvg = item.querySelector('svg')
+      if (oldSvg) oldSvg.remove()
+      item.__mermaidGestureBound = false
+
+      const config = mermaidSrc.dataset.config ? JSON.parse(mermaidSrc.dataset.config) : {}
+      if (!config.theme) {
+        config.theme = theme
+      }
+      const mermaidThemeConfig = `%%{init: ${JSON.stringify(config)}}%%\n`
+      const mermaidID = `mermaid-${index}`
+      const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+
+      const renderFn = mermaid.render(mermaidID, mermaidDefinition)
+      const renderMermaid = svg => {
+        mermaidSrc.insertAdjacentHTML('afterend', svg)
+        if (false) initMermaidGestures(item)
+        item.__mermaidOriginalSvg = svg
+        if (false) attachMermaidViewerButton(item)
+      }
+
+
+      // mermaid v9 and v10 compatibility
+      typeof renderFn === 'string' ? renderMermaid(renderFn) : renderFn.then(({ svg }) => renderMermaid(svg))
+    })
+  }
+
+  const codeToMermaid = () => {
+    const codeMermaidEle = document.querySelectorAll('pre > code.mermaid')
+    if (codeMermaidEle.length === 0) return
+
+    codeMermaidEle.forEach(ele => {
+      const preEle = document.createElement('pre')
+      preEle.className = 'mermaid-src'
+      preEle.hidden = true
+      preEle.textContent = ele.textContent
+      const newEle = document.createElement('div')
+      newEle.className = 'mermaid-wrap'
+      newEle.appendChild(preEle)
+      ele.parentNode.replaceWith(newEle)
+    })
+  }
+
+  const loadMermaid = () => {
+    if (true) codeToMermaid()
+    const $mermaid = document.querySelectorAll('#article-container .mermaid-wrap')
+    if ($mermaid.length === 0) return
+
+    const runMermaidFn = () => runMermaid($mermaid)
+    btf.addGlobalFn('themeChange', runMermaidFn, 'mermaid')
+    window.loadMermaid ? runMermaidFn() : btf.getScript('https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js').then(runMermaidFn)
+  }
+
+  btf.addGlobalFn('encrypt', loadMermaid, 'mermaid')
+  window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+})()</script><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"data-mapping":"title","data-strict":0,"data-reactions-enabled":1,"data-emit-metadata":0,"data-input-position":"top","data-lang":"zh-CN","crossorigin":"anonymous"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'codexvn/codexvn.github.io',
+      'data-repo-id': 'MDEwOlJlcG9zaXRvcnkzNTA5ODQ0Njg=',
+      'data-category-id': 'DIC_kwDOFOuZFM4Ccavs',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !true) {
+    if (true) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
